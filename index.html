@@ -4,1069 +4,605 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DroidWeb — Android Emulator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c26;
-    --border: #2a2a3a;
-    --accent: #4fffb0;
-    --accent2: #7b6fff;
-    --text: #e8e8f0;
-    --muted: #6b6b80;
-    --danger: #ff4f6b;
-    --phone-w: 320px;
-    --phone-h: 640px;
-    --screen-w: 284px;
-    --screen-h: 504px;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: 56px 1fr;
-    grid-template-columns: 280px 1fr 300px;
-    grid-template-areas: "nav nav nav" "sidebar phone panel";
-    overflow: hidden;
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#e8e8f0;font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+nav{height:52px;background:#13131a;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.logo{font-family:'Space Mono',monospace;font-size:15px;color:#4fffb0}
+.logo span{color:#555}
+.chip{padding:3px 10px;border-radius:20px;font-size:11px;background:rgba(79,255,176,0.08);color:#4fffb0;border:1px solid rgba(79,255,176,0.2)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:#444;transition:background 0.3s}
+.dot.on{background:#4fffb0;box-shadow:0 0 6px #4fffb0}
+.status{font-size:11px;color:#666;font-family:'Space Mono',monospace}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:260px;flex-shrink:0;background:#13131a;border-right:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column}
+.sec{padding:14px;border-bottom:1px solid #2a2a3a}
+.sec-label{font-size:10px;letter-spacing:1.5px;color:#555;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+.upload-box{border:1.5px dashed #2a2a3a;border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.upload-box:hover{border-color:#4fffb0;background:rgba(79,255,176,0.03)}
+.upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-box p{font-size:12px;color:#555;margin-top:6px;line-height:1.5}
+.upload-box strong{color:#e8e8f0}
+.app-btn{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all 0.15s;width:100%;background:transparent;color:#e8e8f0;text-align:left;font-family:'DM Sans',sans-serif}
+.app-btn:hover{background:#1c1c26;border-color:#2a2a3a}
+.app-btn.active{background:rgba(79,255,176,0.06);border-color:rgba(79,255,176,0.3)}
+.app-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.app-name{font-size:13px;font-weight:500}
+.app-sub{font-size:11px;color:#555}
+.badge{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(123,111,255,0.1);color:#7b6fff}
+.field-label{font-size:11px;color:#555;margin-bottom:5px;display:block}
+input.url-input{width:100%;padding:8px 10px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:6px;color:#e8e8f0;font-size:12px;font-family:'Space Mono',monospace;outline:none;transition:border-color 0.2s;margin-bottom:8px}
+input.url-input:focus{border-color:#7b6fff}
+.btn{padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:6px}
+.btn-green{background:#4fffb0;color:#000}
+.btn-green:hover{background:#6fffbf}
+.btn-gray{background:#1c1c26;color:#e8e8f0;border:1px solid #2a2a3a}
+.btn-gray:hover{border-color:#7b6fff}
+.center{flex:1;display:flex;align-items:center;justify-content:center;background:#0a0a0f;padding:20px}
+.phone{width:300px;height:620px;background:#141420;border-radius:42px;border:2px solid #2a2a3a;box-shadow:0 0 0 1px #1a1a28,0 30px 60px rgba(0,0,0,0.5);position:relative;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.phone::after{content:'';position:absolute;left:-4px;top:150px;width:4px;height:40px;background:#222;border-radius:3px 0 0 3px;box-shadow:0 54px 0 #222}
+.phone-top{height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notch{width:100px;height:24px;background:#0a0a10;border-radius:0 0 14px 14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.ncam{width:8px;height:8px;border-radius:50%;background:#1a1a24}
+.nspk{width:36px;height:3px;background:#1a1a24;border-radius:2px}
+.screen{flex:1;background:#000;position:relative;overflow:hidden;cursor:pointer}
+.sbar{height:22px;background:rgba(0,0,0,0.6);display:flex;align-items:center;padding:0 12px;position:absolute;top:0;left:0;right:0;z-index:10;font-size:10px;font-family:'Space Mono',monospace;color:#fff}
+.sbar-icons{margin-left:auto;font-size:9px}
+.home-screen{position:absolute;inset:0;background:linear-gradient(160deg,#1a1030,#0d1a2e 50%,#0a100a);display:flex;flex-direction:column}
+.woverlay{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 30%,rgba(79,255,176,0.07) 0%,transparent 60%);pointer-events:none}
+.hdate{padding:44px 0 6px;text-align:center;position:relative;z-index:1}
+.htime{font-size:50px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1}
+.hdatestr{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px}
+.appgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px;margin-top:auto;position:relative;z-index:1}
+.happ{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.happ-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform 0.1s}
+.happ:active .happ-icon{transform:scale(0.9)}
+.happ-label{font-size:9px;color:rgba(255,255,255,0.7);text-align:center}
+.dock{margin:6px 12px 10px;background:rgba(255,255,255,0.07);border-radius:18px;padding:8px;display:flex;justify-content:space-around}
+.abar{height:34px;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:space-around;padding:0 20px;position:absolute;bottom:0;left:0;right:0;z-index:10}
+.nbtn{cursor:pointer;opacity:0.6;font-size:13px;padding:3px 8px;transition:opacity 0.15s}
+.nbtn:hover{opacity:1}
+.app-view{position:absolute;inset:0;display:none;flex-direction:column}
+.app-view.show{display:flex}
+.app-header{height:22px;background:rgba(0,0,0,0.6);display:flex;align-items:center;padding:0 12px;z-index:10;font-size:10px;font-family:'Space Mono',monospace;color:#fff;flex-shrink:0}
+.app-content{flex:1;overflow:hidden;position:relative}
+.stream-img{width:100%;height:100%;object-fit:contain;background:#000}
+.loading{position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+.loading.hide{display:none}
+.spinner{width:36px;height:36px;border:2px solid #2a2a3a;border-top-color:#4fffb0;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldtext{font-size:12px;color:#555;margin-top:10px;font-family:'Space Mono',monospace}
+.phone-bot{height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hind{width:90px;height:3px;background:rgba(255,255,255,0.12);border-radius:2px}
+.right-panel{width:280px;flex-shrink:0;background:#13131a;border-left:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ctrl{padding:7px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid #2a2a3a;background:#1c1c26;color:#e8e8f0;text-align:center;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.ctrl:hover{border-color:#7b6fff}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.icard{background:#1c1c26;border-radius:7px;padding:9px;border:1px solid #2a2a3a}
+.icard-l{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.icard-v{font-size:12px;font-weight:500;font-family:'Space Mono',monospace}
+.log-box{background:#0a0a0a;border-radius:7px;padding:9px;height:160px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:10px;line-height:1.6}
+.log-box .l{color:#555}
+.log-box .i{color:#4fffb0}
+.log-box .w{color:#ffd166}
+.log-box .e{color:#ff4f6b}
+.log-box .s{color:#7b6fff}
+.adb-row{display:flex;gap:5px;margin-top:7px}
+.adb-input{flex:1;padding:6px 9px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:5px;color:#e8e8f0;font-size:11px;font-family:'Space Mono',monospace;outline:none}
+.adb-run{padding:6px 10px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:5px;color:#e8e8f0;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:#1c1c26;border:1px solid #2a2a3a;padding:9px 18px;border-radius:8px;font-size:12px;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
 
-  /* ── NAV ── */
-  nav {
-    grid-area: nav;
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    border-bottom: 1px solid var(--border);
-    gap: 16px;
-    background: var(--surface);
-  }
-  .logo { font-family: 'Space Mono', monospace; font-size: 16px; color: var(--accent); letter-spacing: -0.5px; }
-  .logo span { color: var(--muted); }
-  .nav-chip {
-    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
-    background: rgba(79,255,176,0.08); color: var(--accent); border: 1px solid rgba(79,255,176,0.2);
-  }
-  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--muted);
-    transition: background 0.3s;
-  }
-  .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-  .status-text { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
-
-  /* ── SIDEBAR ── */
-  aside {
-    grid-area: sidebar;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  .sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
-  .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
-
-  /* Upload zone */
-  .upload-zone {
-    border: 1.5px dashed var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(79,255,176,0.04); }
-  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-  .upload-icon { font-size: 28px; margin-bottom: 8px; }
-  .upload-zone p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .upload-zone strong { color: var(--text); font-weight: 500; }
-
-  /* Progress bar */
-  .progress-wrap { margin-top: 10px; display: none; }
-  .progress-wrap.visible { display: block; }
-  .progress-bar-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.3s; }
-  .progress-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'Space Mono', monospace; }
-
-  /* Demo apps */
-  .app-list { display: flex; flex-direction: column; gap: 6px; }
-  .app-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; border-radius: 8px; cursor: pointer;
-    border: 1px solid transparent; transition: all 0.15s;
-  }
-  .app-item:hover { background: var(--surface2); border-color: var(--border); }
-  .app-item.active { background: rgba(79,255,176,0.06); border-color: rgba(79,255,176,0.3); }
-  .app-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-  .app-info .app-name { font-size: 13px; font-weight: 500; }
-  .app-info .app-size { font-size: 11px; color: var(--muted); }
-  .app-status { margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-  .app-status.ready { background: rgba(79,255,176,0.1); color: var(--accent); }
-  .app-status.demo { background: rgba(123,111,255,0.1); color: var(--accent2); }
-
-  /* Backend config */
-  .config-form { display: flex; flex-direction: column; gap: 8px; }
-  .config-form label { font-size: 11px; color: var(--muted); margin-bottom: 2px; display: block; }
-  .config-form input {
-    width: 100%; padding: 8px 10px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text); font-size: 12px; font-family: 'Space Mono', monospace;
-    outline: none; transition: border-color 0.2s;
-  }
-  .config-form input:focus { border-color: var(--accent2); }
-  .btn {
-    padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-  }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:hover { background: #6fffbf; }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent2); }
-  .btn-danger { background: rgba(255,79,107,0.1); color: var(--danger); border: 1px solid rgba(255,79,107,0.2); }
-  .btn-danger:hover { background: rgba(255,79,107,0.2); }
-  .btn-full { width: 100%; text-align: center; }
-
-  /* ── PHONE ── */
-  .phone-area {
-    grid-area: phone;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: var(--bg);
-    position: relative;
-  }
-  .phone-glow {
-    position: absolute;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(79,255,176,0.04) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  /* Phone shell */
-  .phone {
-    width: var(--phone-w);
-    height: var(--phone-h);
-    background: linear-gradient(160deg, #1e1e2a 0%, #141420 100%);
-    border-radius: 44px;
-    border: 2px solid #2e2e40;
-    box-shadow: 0 0 0 1px #1a1a28, 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
-    position: relative;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  /* Side buttons */
-  .phone::before {
-    content: '';
-    position: absolute;
-    right: -4px; top: 130px;
-    width: 4px; height: 60px;
-    background: #2a2a38; border-radius: 0 3px 3px 0;
-    box-shadow: 0 80px 0 #2a2a38;
-  }
-  .phone::after {
-    content: '';
-    position: absolute;
-    left: -4px; top: 160px;
-    width: 4px; height: 40px;
-    background: #2a2a38; border-radius: 3px 0 0 3px;
-    box-shadow: 0 54px 0 #2a2a38, 0 106px 0 #2a2a38;
-  }
-
-  /* Notch/camera bar */
-  .phone-top {
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-  }
-  .notch {
-    width: 110px; height: 26px;
-    background: #0a0a10;
-    border-radius: 0 0 16px 16px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .notch-cam { width: 10px; height: 10px; border-radius: 50%; background: #1a1a24; border: 1px solid #2a2a36; }
-  .notch-speaker { width: 40px; height: 4px; background: #1a1a24; border-radius: 2px; }
-
-  /* Screen */
-  .phone-screen {
-    width: var(--screen-w);
-    height: var(--screen-h);
-    background: #000;
-    margin: 0 auto;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-    cursor: crosshair;
-  }
-
-  /* Status bar inside screen */
-  .android-status-bar {
-    height: 24px;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: center;
-    padding: 0 12px;
-    position: absolute; top: 0; left: 0; right: 0;
-    z-index: 10;
-    font-size: 11px; font-family: 'Space Mono', monospace;
-    color: #fff;
-  }
-  .status-time { font-weight: 700; font-size: 10px; }
-  .status-icons { margin-left: auto; display: flex; gap: 4px; align-items: center; font-size: 9px; }
-
-  /* Home screen */
-  #home-screen {
-    position: absolute; inset: 0;
-    background: linear-gradient(160deg, #1a1030 0%, #0d1a2e 50%, #0a100a 100%);
-    display: flex; flex-direction: column;
-  }
-  .wallpaper-overlay {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 60% 30%, rgba(79,255,176,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 20% 70%, rgba(123,111,255,0.08) 0%, transparent 50%);
-    pointer-events: none;
-  }
-  .home-date {
-    padding: 48px 0 8px; text-align: center; position: relative; z-index: 1;
-  }
-  .home-time { font-family: 'DM Sans', sans-serif; font-size: 52px; font-weight: 300; color: #fff; letter-spacing: -2px; line-height: 1; }
-  .home-datestr { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
-
-  .app-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 14px; padding: 16px 14px; margin-top: auto;
-    position: relative; z-index: 1;
-  }
-  .home-app {
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    cursor: pointer;
-  }
-  .home-app-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    transition: transform 0.15s;
-  }
-  .home-app:active .home-app-icon { transform: scale(0.92); }
-  .home-app-label { font-size: 10px; color: rgba(255,255,255,0.75); text-align: center; }
-
-  .home-dock {
-    margin: 8px 14px 12px;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 10px;
-    display: flex; justify-content: space-around;
-    position: relative; z-index: 1;
-  }
-  .dock-app { cursor: pointer; }
-  .dock-app .home-app-icon { width: 44px; height: 44px; }
-
-  /* Nav bar at bottom of screen */
-  .android-nav {
-    height: 36px;
-    background: rgba(0,0,0,0.7);
-    display: flex; align-items: center; justify-content: space-around;
-    padding: 0 30px;
-    position: absolute; bottom: 0; left: 0; right: 0;
-    z-index: 10;
-  }
-  .nav-btn { cursor: pointer; opacity: 0.7; font-size: 14px; padding: 4px 8px; transition: opacity 0.15s; }
-  .nav-btn:hover { opacity: 1; }
-
-  /* Stream view */
-  #stream-view {
-    position: absolute; inset: 0;
-    display: none;
-    flex-direction: column;
-  }
-  #stream-view.active { display: flex; }
-  #android-stream {
-    flex: 1;
-    width: 100%;
-    object-fit: contain;
-    background: #000;
-    cursor: crosshair;
-  }
-  .stream-overlay {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.85);
-    z-index: 20;
-  }
-  .stream-overlay.hidden { display: none; }
-  .loader {
-    width: 40px; height: 40px; border: 2px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .overlay-text { font-size: 13px; color: var(--muted); margin-top: 12px; font-family: 'Space Mono', monospace; }
-  .overlay-subtext { font-size: 11px; color: var(--muted); margin-top: 6px; opacity: 0.6; }
-
-  /* Phone bottom bar */
-  .phone-bottom {
-    height: 24px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .home-indicator {
-    width: 100px; height: 4px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 2px;
-  }
-
-  /* ── RIGHT PANEL ── */
-  .right-panel {
-    grid-area: panel;
-    border-left: 1px solid var(--border);
-    background: var(--surface);
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-  .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-  .panel-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
-
-  /* Controls grid */
-  .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .ctrl-btn {
-    padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 500;
-    cursor: pointer; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text);
-    text-align: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-  }
-  .ctrl-btn:hover { border-color: var(--accent2); background: rgba(123,111,255,0.06); }
-  .ctrl-btn:active { transform: scale(0.96); }
-
-  /* Log console */
-  .log-console {
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 10px;
-    height: 180px;
-    overflow-y: auto;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    line-height: 1.6;
-  }
-  .log-line { color: var(--muted); }
-  .log-line.info { color: var(--accent); }
-  .log-line.warn { color: #ffd166; }
-  .log-line.error { color: var(--danger); }
-  .log-line.system { color: var(--accent2); }
-
-  /* Device info */
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .info-card {
-    background: var(--surface2);
-    border-radius: 8px; padding: 10px;
-    border: 1px solid var(--border);
-  }
-  .info-card-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .info-card-value { font-size: 13px; font-weight: 500; font-family: 'Space Mono', monospace; }
-
-  /* Touch ripple */
-  .ripple {
-    position: absolute; border-radius: 50%;
-    background: rgba(79,255,176,0.4);
-    transform: scale(0); pointer-events: none;
-    animation: ripple-anim 0.4s ease-out forwards;
-  }
-  @keyframes ripple-anim {
-    to { transform: scale(4); opacity: 0; }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--surface2); border: 1px solid var(--border);
-    padding: 10px 20px; border-radius: 10px; font-size: 13px;
-    opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 100;
-    white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Demo app styles */
+.calc-wrap{background:#1a1a1a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace}
+.calc-display{flex:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:14px;font-size:32px;color:#fff;background:#111;word-break:break-all;min-height:80px}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#333}
+.calc-btn{padding:16px 0;font-size:16px;border:none;cursor:pointer;font-family:'Space Mono',monospace;color:#fff;background:#2a2a2a}
+.calc-btn.op{background:#f0a500;color:#000}
+.calc-btn.fn{background:#555;color:#000}
+.calc-btn.eq{background:#f0a500}
+.term-wrap{background:#0a0a0a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace;font-size:11px}
+.term-out{flex:1;overflow-y:auto;padding:10px;color:#4fffb0;line-height:1.7}
+.term-row{display:flex;padding:6px 8px;gap:6px;border-top:1px solid #1a1a1a;align-items:center}
+.term-prompt{color:#4fffb0;flex-shrink:0}
+.term-in{flex:1;background:transparent;border:none;color:#4fffb0;font-family:'Space Mono',monospace;font-size:11px;outline:none}
+.set-wrap{background:#f0f0f0;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif}
+.set-head{background:#6200ea;padding:14px;color:#fff;font-size:15px;font-weight:600}
+.set-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-bottom:1px solid #eee;cursor:pointer}
+.set-item:hover{background:#f9f9f9}
+.set-icon{font-size:18px;width:24px;text-align:center}
+.set-name{font-size:13px;color:#333}
+.set-arrow{margin-left:auto;color:#999;font-size:12px}
+.files-wrap{background:#fff;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif}
+.files-head{background:#1976d2;padding:14px;color:#fff;font-size:15px;font-weight:600}
+.file-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #eee;cursor:pointer}
+.file-icon{font-size:20px;width:24px;text-align:center}
+.file-name{font-size:13px;color:#333}
+.file-meta{font-size:10px;color:#999;margin-top:2px}
+.default-app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;background:#1a1a2a;padding:20px;text-align:center}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="logo">Droid<span>Web</span></div>
-  <div class="nav-chip">Android Emulator</div>
+  <div class="chip">Android Emulator</div>
   <div class="nav-right">
-    <div class="status-dot" id="status-dot"></div>
-    <span class="status-text" id="status-text">disconnected</span>
+    <div class="dot" id="dot"></div>
+    <span class="status" id="status-txt">disconnected</span>
   </div>
 </nav>
 
+<div class="main">
+
 <!-- SIDEBAR -->
-<aside>
-  <div class="sidebar-section">
-    <div class="sidebar-label">Upload APK</div>
-    <div class="upload-zone" id="upload-zone">
-      <input type="file" id="apk-input" accept=".apk"/>
-      <div class="upload-icon">📦</div>
+<div class="sidebar">
+  <div class="sec">
+    <div class="sec-label">Upload APK</div>
+    <div class="upload-box" id="upload-box">
+      <input type="file" id="apk-file" accept=".apk"/>
+      <div style="font-size:26px">📦</div>
       <p><strong>Drop APK here</strong><br/>or click to browse</p>
     </div>
-    <div class="progress-wrap" id="progress-wrap">
-      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
-      <div class="progress-label" id="progress-label">Uploading...</div>
+    <div id="prog-wrap" style="display:none;margin-top:8px">
+      <div style="height:3px;background:#2a2a3a;border-radius:2px;overflow:hidden">
+        <div id="prog-fill" style="height:100%;background:#4fffb0;width:0%;transition:width 0.3s"></div>
+      </div>
+      <div id="prog-label" style="font-size:10px;color:#555;margin-top:4px;font-family:'Space Mono',monospace">Uploading...</div>
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-label">Demo Apps</div>
-    <div class="app-list" id="app-list">
-      <div class="app-item active" data-app="calculator" onclick="launchDemo(this)">
+  <div class="sec">
+    <div class="sec-label">Demo Apps</div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <button class="app-btn active" onclick="openApp('calculator')">
         <div class="app-icon" style="background:#1a3a2a">🧮</div>
-        <div class="app-info">
-          <div class="app-name">Calculator</div>
-          <div class="app-size">Built-in demo</div>
-        </div>
-        <span class="app-status demo">demo</span>
-      </div>
-      <div class="app-item" data-app="browser" onclick="launchDemo(this)">
-        <div class="app-icon" style="background:#1a1a3a">🌐</div>
-        <div class="app-info">
-          <div class="app-name">Browser</div>
-          <div class="app-size">Built-in demo</div>
-        </div>
-        <span class="app-status demo">demo</span>
-      </div>
-      <div class="app-item" data-app="settings" onclick="launchDemo(this)">
-        <div class="app-icon" style="background:#2a2a1a">⚙️</div>
-        <div class="app-info">
-          <div class="app-name">Settings</div>
-          <div class="app-size">Built-in demo</div>
-        </div>
-        <span class="app-status demo">demo</span>
-      </div>
-      <div class="app-item" data-app="terminal" onclick="launchDemo(this)">
+        <div><div class="app-name">Calculator</div><div class="app-sub">Demo app</div></div>
+        <span class="badge">demo</span>
+      </button>
+      <button class="app-btn" onclick="openApp('terminal')">
         <div class="app-icon" style="background:#0a1a0a">💻</div>
-        <div class="app-info">
-          <div class="app-name">Terminal</div>
-          <div class="app-size">Built-in demo</div>
-        </div>
-        <span class="app-status demo">demo</span>
-      </div>
+        <div><div class="app-name">Terminal</div><div class="app-sub">Demo app</div></div>
+        <span class="badge">demo</span>
+      </button>
+      <button class="app-btn" onclick="openApp('settings')">
+        <div class="app-icon" style="background:#2a2a1a">⚙️</div>
+        <div><div class="app-name">Settings</div><div class="app-sub">Demo app</div></div>
+        <span class="badge">demo</span>
+      </button>
+      <button class="app-btn" onclick="openApp('files')">
+        <div class="app-icon" style="background:#2a1a0a">📁</div>
+        <div><div class="app-name">Files</div><div class="app-sub">Demo app</div></div>
+        <span class="badge">demo</span>
+      </button>
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-label">Backend URL</div>
-    <div class="config-form">
-      <div>
-        <label>Railway / Render URL</label>
-        <input type="text" id="backend-url" placeholder="https://your-app.railway.app" value=""/>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="connectBackend()">Connect</button>
-      <button class="btn btn-secondary btn-full" onclick="showSetupGuide()">Setup Guide</button>
-    </div>
+  <div class="sec">
+    <div class="sec-label">Backend URL</div>
+    <label class="field-label">Render / Railway URL</label>
+    <input class="url-input" type="text" id="backend-url" placeholder="https://yourapp.onrender.com"/>
+    <button class="btn btn-green" onclick="connectBackend()">Connect</button>
+    <button class="btn btn-gray" onclick="alert('1. Deploy backend to Render.com\n2. Copy your Render URL\n3. Paste it above and click Connect')">Setup Guide</button>
   </div>
-</aside>
+</div>
 
 <!-- PHONE -->
-<main class="phone-area">
-  <div class="phone-glow"></div>
+<div class="center">
   <div class="phone">
     <div class="phone-top">
-      <div class="notch">
-        <div class="notch-cam"></div>
-        <div class="notch-speaker"></div>
-        <div class="notch-cam"></div>
-      </div>
+      <div class="notch"><div class="ncam"></div><div class="nspk"></div><div class="ncam"></div></div>
     </div>
 
-    <div class="phone-screen" id="phone-screen">
-      <!-- Status bar -->
-      <div class="android-status-bar">
-        <span class="status-time" id="android-time">12:00</span>
-        <span class="status-icons">
-          <span>📶</span><span>🔋</span>
-        </span>
-      </div>
-
+    <div class="screen" id="screen">
       <!-- Home screen -->
-      <div id="home-screen">
-        <div class="wallpaper-overlay"></div>
-        <div class="home-date">
-          <div class="home-time" id="home-time">12:00</div>
-          <div class="home-datestr" id="home-date">Monday, March 22</div>
+      <div class="home-screen" id="home-screen">
+        <div class="woverlay"></div>
+        <div class="sbar"><span id="home-time" style="font-size:10px;font-weight:700">12:00</span><span class="sbar-icons">📶🔋</span></div>
+        <div class="hdate">
+          <div class="htime" id="big-time">12:00</div>
+          <div class="hdatestr" id="big-date">Monday, March 22</div>
         </div>
-        <div class="app-grid" id="home-app-grid">
-          <!-- populated by JS -->
+        <div class="appgrid">
+          <div class="happ" onclick="openApp('calculator')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a3a2a,#0a2a1a)">🧮</div><div class="happ-label">Calc</div></div>
+          <div class="happ" onclick="openApp('terminal')"><div class="happ-icon" style="background:linear-gradient(135deg,#0a1a0a,#050f05)">💻</div><div class="happ-label">Terminal</div></div>
+          <div class="happ" onclick="openApp('settings')"><div class="happ-icon" style="background:linear-gradient(135deg,#2a2a1a,#1a1a0a)">⚙️</div><div class="happ-label">Settings</div></div>
+          <div class="happ" onclick="openApp('files')"><div class="happ-icon" style="background:linear-gradient(135deg,#2a1a0a,#1a0f05)">📁</div><div class="happ-label">Files</div></div>
+          <div class="happ" onclick="openApp('camera')"><div class="happ-icon" style="background:linear-gradient(135deg,#2a0a0a,#1a0505)">📷</div><div class="happ-label">Camera</div></div>
+          <div class="happ" onclick="openApp('maps')"><div class="happ-icon" style="background:linear-gradient(135deg,#0a2a1a,#051a0f)">🗺️</div><div class="happ-label">Maps</div></div>
+          <div class="happ" onclick="openApp('messages')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a2a4a,#0a1a3a)">💬</div><div class="happ-label">Messages</div></div>
+          <div class="happ" onclick="openApp('games')"><div class="happ-icon" style="background:linear-gradient(135deg,#2a1a3a,#1a0a2a)">🎮</div><div class="happ-label">Games</div></div>
         </div>
-        <div class="home-dock">
-          <div class="home-app dock-app" onclick="openApp('phone')">
-            <div class="home-app-icon" style="background:linear-gradient(135deg,#1a8a1a,#0a5a0a)">📞</div>
-          </div>
-          <div class="home-app dock-app" onclick="openApp('messages')">
-            <div class="home-app-icon" style="background:linear-gradient(135deg,#1a4a8a,#0a2a6a)">💬</div>
-          </div>
-          <div class="home-app dock-app" onclick="openApp('camera')">
-            <div class="home-app-icon" style="background:linear-gradient(135deg,#4a1a1a,#2a0a0a)">📷</div>
-          </div>
-          <div class="home-app dock-app" onclick="openApp('appDrawer')">
-            <div class="home-app-icon" style="background:linear-gradient(135deg,#2a2a2a,#1a1a1a)">⋮⋮</div>
-          </div>
+        <div class="dock">
+          <div class="happ" onclick="openApp('phone')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a6a1a,#0a4a0a);width:42px;height:42px">📞</div></div>
+          <div class="happ" onclick="openApp('messages')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a3a6a,#0a1a4a);width:42px;height:42px">💬</div></div>
+          <div class="happ" onclick="openApp('camera')"><div class="happ-icon" style="background:linear-gradient(135deg,#4a1a1a,#2a0a0a);width:42px;height:42px">📷</div></div>
+          <div class="happ" onclick="openApp('browser')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a1a4a,#0a0a2a);width:42px;height:42px">🌐</div></div>
         </div>
-        <div class="android-nav">
-          <span class="nav-btn" onclick="goBack()">◁</span>
-          <span class="nav-btn" onclick="goHome()">○</span>
-          <span class="nav-btn" onclick="showRecents()">□</span>
+        <div class="abar">
+          <span class="nbtn" onclick="goHome()">◁</span>
+          <span class="nbtn" onclick="goHome()">○</span>
+          <span class="nbtn" onclick="toast('Recent apps')">□</span>
         </div>
       </div>
 
-      <!-- Stream view (real APK from backend) -->
-      <div id="stream-view">
-        <div class="android-status-bar" style="position:relative;flex-shrink:0">
-          <span class="status-time" id="stream-time">12:00</span>
-          <span style="font-size:10px;color:rgba(79,255,176,0.8);margin-left:8px" id="running-app-name">App</span>
-          <span class="status-icons"><span>📶</span><span>🔋</span></span>
+      <!-- App view -->
+      <div class="app-view" id="app-view">
+        <div class="app-header">
+          <span id="app-time" style="font-weight:700">12:00</span>
+          <span id="app-name" style="margin-left:8px;color:#4fffb0;font-size:9px">App</span>
+          <span class="sbar-icons" style="margin-left:auto">📶🔋</span>
         </div>
-        <img id="android-stream" src="" alt="Android screen stream"/>
-        <div class="stream-overlay" id="stream-overlay">
-          <div class="loader"></div>
-          <div class="overlay-text" id="overlay-text">Starting Android...</div>
-          <div class="overlay-subtext" id="overlay-subtext">This may take 30–60 seconds</div>
+        <div class="app-content" id="app-content">
+          <img id="stream-img" class="stream-img" src="" alt="" style="display:none"/>
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="ldtext" id="ld-text">Loading...</div>
+          </div>
         </div>
-        <div class="android-nav">
-          <span class="nav-btn" onclick="sendKey('back')">◁</span>
-          <span class="nav-btn" onclick="goHome()">○</span>
-          <span class="nav-btn" onclick="sendKey('recent')">□</span>
+        <div class="abar">
+          <span class="nbtn" onclick="goBack()">◁</span>
+          <span class="nbtn" onclick="goHome()">○</span>
+          <span class="nbtn" onclick="toast('Recent apps')">□</span>
         </div>
       </div>
     </div>
 
-    <div class="phone-bottom">
-      <div class="home-indicator"></div>
-    </div>
+    <div class="phone-bot"><div class="hind"></div></div>
   </div>
-</main>
+</div>
 
 <!-- RIGHT PANEL -->
-<aside class="right-panel">
-  <div class="panel-section">
-    <div class="panel-title">Device Controls</div>
-    <div class="controls-grid">
-      <button class="ctrl-btn" onclick="sendKey('volumeup')">🔊 Vol +</button>
-      <button class="ctrl-btn" onclick="sendKey('volumedown')">🔉 Vol −</button>
-      <button class="ctrl-btn" onclick="sendKey('back')">◁ Back</button>
-      <button class="ctrl-btn" onclick="goHome()">○ Home</button>
-      <button class="ctrl-btn" onclick="sendKey('recent')">□ Recent</button>
-      <button class="ctrl-btn" onclick="sendKey('screenshot')">📸 Shot</button>
-      <button class="ctrl-btn" onclick="rotateScreen()">↻ Rotate</button>
-      <button class="ctrl-btn" onclick="sendKey('menu')">≡ Menu</button>
+<div class="right-panel">
+  <div class="sec">
+    <div class="sec-label" style="margin-bottom:10px">Device Controls</div>
+    <div class="ctrl-grid">
+      <button class="ctrl" onclick="sendKey('volumeup')">🔊 Vol +</button>
+      <button class="ctrl" onclick="sendKey('volumedown')">🔉 Vol −</button>
+      <button class="ctrl" onclick="goBack()">◁ Back</button>
+      <button class="ctrl" onclick="goHome()">○ Home</button>
+      <button class="ctrl" onclick="sendKey('recent')">□ Recent</button>
+      <button class="ctrl" onclick="sendKey('screenshot')">📸 Shot</button>
+      <button class="ctrl" onclick="sendKey('rotate')">↻ Rotate</button>
+      <button class="ctrl" onclick="sendKey('menu')">≡ Menu</button>
     </div>
   </div>
 
-  <div class="panel-section">
-    <div class="panel-title">Device Info</div>
+  <div class="sec">
+    <div class="sec-label" style="margin-bottom:10px">Device Info</div>
     <div class="info-grid">
-      <div class="info-card">
-        <div class="info-card-label">Android</div>
-        <div class="info-card-value" id="info-android">13.0</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">RAM</div>
-        <div class="info-card-value" id="info-ram">2 GB</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Storage</div>
-        <div class="info-card-value" id="info-storage">8 GB</div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-label">Arch</div>
-        <div class="info-card-value">x86_64</div>
-      </div>
+      <div class="icard"><div class="icard-l">Android</div><div class="icard-v">13.0</div></div>
+      <div class="icard"><div class="icard-l">RAM</div><div class="icard-v">2 GB</div></div>
+      <div class="icard"><div class="icard-l">Storage</div><div class="icard-v">8 GB</div></div>
+      <div class="icard"><div class="icard-l">Arch</div><div class="icard-v">x86_64</div></div>
     </div>
   </div>
 
-  <div class="panel-section">
-    <div class="panel-title">ADB Console</div>
-    <div class="log-console" id="log-console">
-      <div class="log-line system">$ DroidWeb v1.0.0</div>
-      <div class="log-line">Connect a backend to run real APKs.</div>
-      <div class="log-line">Demo apps run locally in the browser.</div>
+  <div class="sec">
+    <div class="sec-label" style="margin-bottom:8px">ADB Console</div>
+    <div class="log-box" id="log-box">
+      <div class="s">$ DroidWeb v1.0</div>
+      <div class="l">Demo apps ready to use.</div>
+      <div class="l">Connect backend for real APKs.</div>
     </div>
-    <div style="display:flex;gap:6px;margin-top:8px">
-      <input type="text" id="adb-input" placeholder="adb shell ..."
-        style="flex:1;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace;outline:none;"
-        onkeydown="if(event.key==='Enter')runAdb()"/>
-      <button class="btn btn-secondary" onclick="runAdb()" style="padding:7px 12px;font-size:12px">Run</button>
+    <div class="adb-row">
+      <input class="adb-input" id="adb-cmd" placeholder="adb shell ..." onkeydown="if(event.key==='Enter')runAdb()"/>
+      <button class="adb-run" onclick="runAdb()">Run</button>
     </div>
   </div>
 
-  <div class="panel-section">
-    <div class="panel-title">Session</div>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <button class="btn btn-secondary btn-full" onclick="restartEmulator()">↺ Restart Emulator</button>
-      <button class="btn btn-danger btn-full" onclick="killSession()">✕ End Session</button>
-    </div>
+  <div class="sec">
+    <button class="btn btn-gray" onclick="restartEmu()">↺ Restart</button>
+    <button class="btn" style="background:rgba(255,79,107,0.1);color:#ff4f6b;border:1px solid rgba(255,79,107,0.2)" onclick="killSession()">✕ End Session</button>
   </div>
-</aside>
+</div>
+
+</div><!-- end .main -->
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ──
-let backendUrl = localStorage.getItem('droidweb_backend') || '';
-let wsConn = null;
-let currentApp = 'home';
-let isStreaming = false;
-let sessionId = null;
+// ── State
+var backendUrl = localStorage.getItem('dw_backend') || '';
+var ws = null;
+var sessionId = null;
+var streaming = false;
 
-// ── Init ──
-document.addEventListener('DOMContentLoaded', () => {
-  updateClock();
-  setInterval(updateClock, 1000);
-  buildHomeApps();
+// ── Boot
+window.onload = function() {
+  tick();
+  setInterval(tick, 1000);
+  setupUpload();
   if (backendUrl) {
     document.getElementById('backend-url').value = backendUrl;
-    connectBackend();
   }
-  setupUploadZone();
-  setupTouchInput();
-});
+};
 
-// ── Clock ──
-function updateClock() {
-  const now = new Date();
-  const t = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const d = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  document.getElementById('android-time').textContent = t;
+function tick() {
+  var now = new Date();
+  var t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
+  var d = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   document.getElementById('home-time').textContent = t;
-  document.getElementById('stream-time').textContent = t;
-  document.getElementById('home-date').textContent = d;
+  document.getElementById('big-time').textContent = t;
+  document.getElementById('big-date').textContent = d;
+  document.getElementById('app-time').textContent = t;
 }
 
-// ── Home screen apps ──
-const HOME_APPS = [
-  { icon: '🎮', label: 'Games', bg: '#1a1a3a', app: 'games' },
-  { icon: '🗺️', label: 'Maps', bg: '#0a2a1a', app: 'maps' },
-  { icon: '📷', label: 'Camera', bg: '#2a0a0a', app: 'camera' },
-  { icon: '🧮', label: 'Calc', bg: '#1a3a2a', app: 'calculator' },
-  { icon: '🌐', label: 'Browser', bg: '#1a1a3a', app: 'browser' },
-  { icon: '⚙️', label: 'Settings', bg: '#2a2a1a', app: 'settings' },
-  { icon: '💻', label: 'Terminal', bg: '#0a1a0a', app: 'terminal' },
-  { icon: '📁', label: 'Files', bg: '#2a1a0a', app: 'files' },
-];
-
-function buildHomeApps() {
-  const grid = document.getElementById('home-app-grid');
-  grid.innerHTML = HOME_APPS.map(a => `
-    <div class="home-app" onclick="openApp('${a.app}')">
-      <div class="home-app-icon" style="background:${a.bg}">${a.icon}</div>
-      <div class="home-app-label">${a.label}</div>
-    </div>
-  `).join('');
-}
-
-// ── Touch input on screen ──
-function setupTouchInput() {
-  const screen = document.getElementById('phone-screen');
-  screen.addEventListener('click', (e) => {
-    // Ripple effect
-    const rect = screen.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const r = document.createElement('div');
-    r.className = 'ripple';
-    r.style.cssText = `left:${x}px;top:${y}px;width:20px;height:20px;margin:-10px 0 0 -10px`;
-    screen.appendChild(r);
-    setTimeout(() => r.remove(), 500);
-    // Forward to backend if streaming
-    if (isStreaming) sendTouchEvent('tap', x, y);
-  });
-
-  let touchStart = null;
-  screen.addEventListener('touchstart', (e) => {
-    const rect = screen.getBoundingClientRect();
-    touchStart = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-    e.preventDefault();
-  }, { passive: false });
-  screen.addEventListener('touchend', (e) => {
-    if (!touchStart) return;
-    const rect = screen.getBoundingClientRect();
-    const ex = e.changedTouches[0].clientX - rect.left;
-    const ey = e.changedTouches[0].clientY - rect.top;
-    const dx = ex - touchStart.x, dy = ey - touchStart.y;
-    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
-      sendTouchEvent('swipe', touchStart.x, touchStart.y, ex, ey);
-    } else {
-      sendTouchEvent('tap', ex, ey);
-    }
-    touchStart = null;
-    e.preventDefault();
-  }, { passive: false });
-}
-
-// ── Backend connection ──
-async function connectBackend() {
-  const url = document.getElementById('backend-url').value.trim().replace(/\/$/, '');
-  if (!url) { toast('Enter your backend URL first'); return; }
-  backendUrl = url;
-  localStorage.setItem('droidweb_backend', url);
-  setStatus('connecting...');
-  log('Connecting to ' + url, 'info');
-  try {
-    const res = await fetch(url + '/api/status', { signal: AbortSignal.timeout(8000) });
-    const data = await res.json();
-    setStatus('connected');
-    log('Backend OK — Android ' + (data.android_version || '13'), 'info');
-    document.getElementById('info-android').textContent = data.android_version || '13.0';
-    document.getElementById('info-ram').textContent = data.ram || '2 GB';
-    document.getElementById('info-storage').textContent = data.storage || '8 GB';
-    toast('Backend connected!');
-    connectWebSocket(url);
-  } catch {
-    setStatus('disconnected');
-    log('Cannot reach backend — using demo mode', 'warn');
-    toast('Backend offline — demo mode active');
+// ── App navigation
+function openApp(name) {
+  log('Opening '+name,'s');
+  document.querySelectorAll('.app-btn').forEach(function(b){b.classList.remove('active');});
+  var builtins = ['calculator','terminal','settings','files','camera','maps','messages','games','phone','browser'];
+  if (builtins.indexOf(name) !== -1) {
+    showDemoApp(name);
+  } else if (ws) {
+    launchStream(name);
+  } else {
+    toast('Connect backend to run APKs');
   }
 }
 
-function connectWebSocket(url) {
-  const wsUrl = url.replace(/^http/, 'ws') + '/ws';
-  try {
-    wsConn = new WebSocket(wsUrl);
-    wsConn.onopen = () => { log('WebSocket open', 'system'); };
-    wsConn.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'frame') updateStream(msg.data);
-      if (msg.type === 'log') log(msg.text, msg.level || 'info');
-      if (msg.type === 'ready') { hideStreamOverlay(); log('Emulator ready', 'info'); }
-      if (msg.type === 'session') { sessionId = msg.id; }
-    };
-    wsConn.onerror = () => log('WebSocket error', 'error');
-    wsConn.onclose = () => { wsConn = null; log('WebSocket closed', 'warn'); };
-  } catch {}
-}
+function showDemoApp(name) {
+  document.getElementById('home-screen').style.display = 'none';
+  var av = document.getElementById('app-view');
+  av.classList.add('show');
+  document.getElementById('app-name').textContent = name;
+  document.getElementById('stream-img').style.display = 'none';
+  document.getElementById('loading').classList.add('hide');
 
-// ── APK Upload ──
-function setupUploadZone() {
-  const zone = document.getElementById('upload-zone');
-  const input = document.getElementById('apk-input');
-  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-  zone.addEventListener('drop', (e) => {
-    e.preventDefault(); zone.classList.remove('drag');
-    const f = e.dataTransfer.files[0];
-    if (f && f.name.endsWith('.apk')) uploadApk(f);
-    else toast('Please drop an .apk file');
-  });
-  input.addEventListener('change', () => {
-    if (input.files[0]) uploadApk(input.files[0]);
-  });
-}
-
-async function uploadApk(file) {
-  if (!backendUrl) { toast('Connect a backend first'); return; }
-  const pw = document.getElementById('progress-wrap');
-  const pf = document.getElementById('progress-fill');
-  const pl = document.getElementById('progress-label');
-  pw.classList.add('visible');
-  log('Uploading ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)', 'info');
-
-  const formData = new FormData();
-  formData.append('apk', file);
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', backendUrl + '/api/upload');
-  xhr.upload.onprogress = (e) => {
-    const pct = Math.round(e.loaded / e.total * 100);
-    pf.style.width = pct + '%';
-    pl.textContent = 'Uploading... ' + pct + '%';
-  };
-  xhr.onload = () => {
-    if (xhr.status === 200) {
-      const res = JSON.parse(xhr.responseText);
-      pl.textContent = 'Uploaded!';
-      log('APK uploaded — installing...', 'info');
-      addUploadedApp(file.name, res.app_id);
-      startStream(res.app_id, file.name);
-    } else {
-      pl.textContent = 'Upload failed';
-      log('Upload error: ' + xhr.status, 'error');
-    }
-    setTimeout(() => pw.classList.remove('visible'), 3000);
-  };
-  xhr.onerror = () => {
-    pl.textContent = 'Upload failed'; log('Upload network error', 'error');
-    setTimeout(() => pw.classList.remove('visible'), 3000);
-  };
-  xhr.send(formData);
-}
-
-function addUploadedApp(filename, appId) {
-  const list = document.getElementById('app-list');
-  const name = filename.replace('.apk','').substring(0, 16);
-  const el = document.createElement('div');
-  el.className = 'app-item';
-  el.dataset.appId = appId;
-  el.innerHTML = `
-    <div class="app-icon" style="background:#1a2a3a">📱</div>
-    <div class="app-info"><div class="app-name">${name}</div><div class="app-size">Uploaded APK</div></div>
-    <span class="app-status ready">ready</span>`;
-  el.onclick = () => startStream(appId, name);
-  list.prepend(el);
-}
-
-// ── Streaming ──
-function startStream(appId, appName) {
-  if (!wsConn) { toast('Not connected to backend'); return; }
-  const sv = document.getElementById('stream-view');
-  const hs = document.getElementById('home-screen');
-  hs.style.display = 'none';
-  sv.classList.add('active');
-  isStreaming = true;
-  document.getElementById('running-app-name').textContent = appName || 'App';
-  showStreamOverlay('Starting ' + (appName || 'app') + '...');
-  log('Launching ' + (appName || appId), 'info');
-  wsConn.send(JSON.stringify({ type: 'launch', app_id: appId }));
-  setTimeout(() => hideStreamOverlay(), 12000);
-}
-
-function updateStream(frameData) {
-  const img = document.getElementById('android-stream');
-  img.src = 'data:image/jpeg;base64,' + frameData;
-  hideStreamOverlay();
-}
-
-function showStreamOverlay(text) {
-  const o = document.getElementById('stream-overlay');
-  o.classList.remove('hidden');
-  if (text) document.getElementById('overlay-text').textContent = text;
-}
-
-function hideStreamOverlay() {
-  document.getElementById('stream-overlay').classList.add('hidden');
-}
-
-// ── Demo apps (in-browser) ──
-function launchDemo(el) {
-  document.querySelectorAll('.app-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  const app = el.dataset.app;
-  openApp(app);
-}
-
-function openApp(app) {
-  log('Opening ' + app, 'system');
-  currentApp = app;
-  const demoApps = ['calculator','browser','settings','terminal','files','camera','maps','games','phone','messages','appDrawer'];
-  if (demoApps.includes(app)) { showDemoApp(app); return; }
-  if (backendUrl && wsConn) { startStream(app, app); } else { toast('Connect backend to run APKs'); }
-}
-
-function showDemoApp(app) {
-  const sv = document.getElementById('stream-view');
-  const hs = document.getElementById('home-screen');
-  hs.style.display = 'none';
-  sv.classList.add('active');
-  hideStreamOverlay();
-  document.getElementById('android-stream').style.display = 'none';
-  const old = document.getElementById('demo-container');
+  // Remove old content
+  var old = document.getElementById('demo-ui');
   if (old) old.remove();
 
-  const demos = {
-    calculator: `<div style="background:#1a1a1a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace"><div id="calc-display" style="flex:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:16px;font-size:36px;color:#fff;background:#111;word-break:break-all">0</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#333">${[['C','±','%','÷'],['7','8','9','×'],['4','5','6','−'],['1','2','3','+'],[' ','0','.','=']].map(row=>row.map(b=>b===' '?'<div style="background:#2a2a2a"></div>':\`<button onclick="calcBtn('\${b}')" style="padding:18px 0;font-size:18px;border:none;cursor:pointer;font-family:'Space Mono',monospace;background:\${['÷','×','−','+','='].includes(b)?'#f0a500':['C','±','%'].includes(b)?'#555':'#2a2a2a'};color:\${['C','±','%'].includes(b)?'#000':'#fff'}">\${b}</button>\`).join('')).join('')}</div></div>`,
-    terminal: `<div style="background:#0a0a0a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace;font-size:12px"><div style="background:#1a1a1a;padding:6px 12px;color:#4fffb0;font-size:11px">Terminal — Android Shell</div><div id="term-out" style="flex:1;overflow-y:auto;padding:10px;color:#4fffb0;line-height:1.6"><div>Android 13 — DroidWeb Shell</div><div>Type 'help' for commands</div><br></div><div style="display:flex;padding:8px;gap:6px;border-top:1px solid #222"><span style="color:#4fffb0">$</span><input id="term-input" style="flex:1;background:transparent;border:none;color:#4fffb0;font-family:'Space Mono',monospace;font-size:12px;outline:none" placeholder="enter command..." onkeydown="if(event.key==='Enter')runTermCmd()"/></div></div>`,
-    settings: `<div style="background:#f0f0f0;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif"><div style="background:#6200ea;padding:14px 16px;color:#fff;font-size:16px;font-weight:600">Settings</div>${[['📶','Network'],['📱','Devices'],['🔔','Notifications'],['🔋','Battery'],['🖥️','Display'],['🔊','Sound'],['💾','Storage'],['🔒','Security'],['👤','Accounts'],['⚙️','System']].map(([i,l])=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border-bottom:1px solid #eee;cursor:pointer" onclick="toast('${l}')"><span style="font-size:20px">${i}</span><span style="font-size:14px">${l}</span><span style="margin-left:auto;color:#999">›</span></div>`).join('')}</div>`,
-    browser: `<div style="background:#fff;height:100%;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif"><div style="background:#f5f5f5;padding:8px;border-bottom:1px solid #ddd"><div style="background:#fff;border:1px solid #ddd;border-radius:20px;padding:6px 14px;font-size:12px;color:#666">droidweb.vercel.app</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#333;padding:20px"><div style="font-size:40px">🌐</div><div style="font-size:14px;font-weight:600">DroidWeb Browser</div><div style="font-size:11px;color:#999;text-align:center">Upload a browser APK to browse the web</div></div></div>`,
-    files: `<div style="background:#fff;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif"><div style="background:#6200ea;padding:14px 16px;color:#fff;font-size:16px;font-weight:600">Files</div>${[['📁','Downloads','12 files'],['📁','Pictures','34 files'],['📁','Music','8 files'],['📁','Documents','5 files'],['📄','README.txt','2 KB'],['📦','myapp.apk','14 MB']].map(([i,n,s])=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #eee"><span style="font-size:22px">${i}</span><div><div style="font-size:13px">${n}</div><div style="font-size:11px;color:#999">${s}</div></div></div>`).join('')}</div>`,
-  };
-
-  const html = demos[app] || `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;background:#1a1a2a"><div style="font-size:48px">${{phone:'📞',messages:'💬',camera:'📷',maps:'🗺️',games:'🎮',appDrawer:'⋮⋮'}[app]||'📱'}</div><div style="font-size:16px;font-weight:500;text-transform:capitalize">${app}</div><div style="font-size:12px;color:#666;text-align:center;padding:0 30px">Upload a real APK to run this app</div></div>`;
-
-  const container = document.createElement('div');
-  container.id = 'demo-container';
-  container.style.cssText = 'position:absolute;top:24px;left:0;right:0;bottom:36px;overflow:hidden;';
-  container.innerHTML = html;
-  document.getElementById('stream-view').appendChild(container);
-  document.getElementById('running-app-name').textContent = app;
+  var div = document.createElement('div');
+  div.id = 'demo-ui';
+  div.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
+  div.innerHTML = getDemoHTML(name);
+  document.getElementById('app-content').appendChild(div);
+  streaming = false;
 }
 
-let calcVal='0', calcOp=null, calcPrev=null, calcReset=false;
-function calcBtn(b) {
-  const d = document.getElementById('calc-display'); if (!d) return;
-  if (b==='C'){calcVal='0';calcOp=null;calcPrev=null;}
-  else if(b==='±'){calcVal=String(-parseFloat(calcVal));}
-  else if(b==='%'){calcVal=String(parseFloat(calcVal)/100);}
-  else if(['÷','×','−','+'].includes(b)){calcPrev=parseFloat(calcVal);calcOp=b;calcReset=true;}
-  else if(b==='='){if(calcOp&&calcPrev!==null){const c=parseFloat(calcVal);const r={'÷':calcPrev/c,'×':calcPrev*c,'−':calcPrev-c,'+':calcPrev+c};calcVal=String(r[calcOp]);calcOp=null;calcPrev=null;}}
-  else if(b==='.'){if(calcReset){calcVal='0.';calcReset=false;}else if(!calcVal.includes('.'))calcVal+='.';}
-  else{if(calcVal==='0'||calcReset){calcVal=b;calcReset=false;}else calcVal+=b;}
-  d.textContent=calcVal;
+function getDemoHTML(name) {
+  if (name === 'calculator') {
+    return '<div class="calc-wrap">' +
+      '<div class="calc-display" id="cd">0</div>' +
+      '<div class="calc-grid">' +
+      '<button class="calc-btn fn" onclick="cb(\'C\')">C</button>' +
+      '<button class="calc-btn fn" onclick="cb(\'+/-\')">+/-</button>' +
+      '<button class="calc-btn fn" onclick="cb(\'%\')">%</button>' +
+      '<button class="calc-btn op" onclick="cb(\'/\')">÷</button>' +
+      '<button class="calc-btn" onclick="cb(\'7\')">7</button>' +
+      '<button class="calc-btn" onclick="cb(\'8\')">8</button>' +
+      '<button class="calc-btn" onclick="cb(\'9\')">9</button>' +
+      '<button class="calc-btn op" onclick="cb(\'*\')">×</button>' +
+      '<button class="calc-btn" onclick="cb(\'4\')">4</button>' +
+      '<button class="calc-btn" onclick="cb(\'5\')">5</button>' +
+      '<button class="calc-btn" onclick="cb(\'6\')">6</button>' +
+      '<button class="calc-btn op" onclick="cb(\'-\')">−</button>' +
+      '<button class="calc-btn" onclick="cb(\'1\')">1</button>' +
+      '<button class="calc-btn" onclick="cb(\'2\')">2</button>' +
+      '<button class="calc-btn" onclick="cb(\'3\')">3</button>' +
+      '<button class="calc-btn op" onclick="cb(\'+\')">+</button>' +
+      '<button class="calc-btn" style="grid-column:span 2" onclick="cb(\'0\')">0</button>' +
+      '<button class="calc-btn" onclick="cb(\'.\')">.</button>' +
+      '<button class="calc-btn eq" onclick="cb(\'=\')">=</button>' +
+      '</div></div>';
+  }
+  if (name === 'terminal') {
+    return '<div class="term-wrap">' +
+      '<div class="term-out" id="tout"><div>Android 13 Shell</div><div style="color:#aaa">Type help for commands</div><br/></div>' +
+      '<div class="term-row"><span class="term-prompt">$</span><input class="term-in" id="tin" placeholder="enter command..." onkeydown="if(event.key===\'Enter\')termRun()"/></div>' +
+      '</div>';
+  }
+  if (name === 'settings') {
+    var items = [['📶','Network'],['📱','Devices'],['🔔','Notifications'],['🔋','Battery'],['🖥️','Display'],['🔊','Sound'],['💾','Storage'],['🔒','Security'],['👤','Accounts'],['⚙️','System']];
+    return '<div class="set-wrap"><div class="set-head">⚙️ Settings</div>' +
+      items.map(function(i){return '<div class="set-item" onclick="toast(\''+i[1]+'\')"><span class="set-icon">'+i[0]+'</span><span class="set-name">'+i[1]+'</span><span class="set-arrow">›</span></div>';}).join('') +
+      '</div>';
+  }
+  if (name === 'files') {
+    var files = [['📁','Downloads','12 items'],['📁','Pictures','34 items'],['📁','Music','8 items'],['📁','Documents','5 items'],['📄','notes.txt','2 KB'],['📦','myapp.apk','14 MB']];
+    return '<div class="files-wrap"><div class="files-head">📁 Files</div>' +
+      files.map(function(f){return '<div class="file-item"><span class="file-icon">'+f[0]+'</span><div><div class="file-name">'+f[1]+'</div><div class="file-meta">'+f[2]+'</div></div></div>';}).join('') +
+      '</div>';
+  }
+  // Default
+  var icons = {phone:'📞',messages:'💬',camera:'📷',maps:'🗺️',games:'🎮',browser:'🌐'};
+  return '<div class="default-app">' +
+    '<div style="font-size:52px">'+(icons[name]||'📱')+'</div>' +
+    '<div style="font-size:15px;font-weight:500;text-transform:capitalize">'+name+'</div>' +
+    '<div style="font-size:11px;color:#555;margin-top:4px">Upload a real APK to run this app</div>' +
+    '</div>';
 }
 
-const termCmds={help:'Commands: ls, pwd, whoami, date, echo, clear, uname',ls:'Downloads  Pictures  Music  Documents  Android',pwd:'/sdcard',whoami:'shell',date:new Date().toString(),uname:'Linux localhost 5.15.0-android13 #1 SMP Android',clear:'__clear__'};
-function runTermCmd(){
-  const input=document.getElementById('term-input');
-  const out=document.getElementById('term-out');
-  if(!input||!out)return;
-  const cmd=input.value.trim(); input.value='';
-  const l=document.createElement('div');l.style.color='#fff';l.textContent='$ '+cmd;out.appendChild(l);
-  const key=cmd.split(' ')[0];
-  let result=termCmds[key];
-  if(!result&&cmd.startsWith('echo '))result=cmd.slice(5);
-  if(!result)result=key+': command not found';
-  if(result==='__clear__'){out.innerHTML='';return;}
-  const r=document.createElement('div');r.textContent=result;out.appendChild(r);
+function goHome() {
+  document.getElementById('home-screen').style.display = '';
+  document.getElementById('app-view').classList.remove('show');
+  streaming = false;
+  var old = document.getElementById('demo-ui'); if (old) old.remove();
+  if (ws) ws.send(JSON.stringify({type:'key',key:'home'}));
+}
+
+function goBack() {
+  if (streaming) { sendKey('back'); }
+  else { goHome(); }
+}
+
+// ── Calculator logic
+var cv='0', cop=null, cprev=null, creset=false;
+function cb(b) {
+  var d = document.getElementById('cd'); if (!d) return;
+  if(b==='C'){cv='0';cop=null;cprev=null;creset=false;}
+  else if(b==='+/-'){cv=String(-parseFloat(cv)||0);}
+  else if(b==='%'){cv=String(parseFloat(cv)/100);}
+  else if(b==='/'||b==='*'||b==='-'||b==='+'){cprev=parseFloat(cv);cop=b;creset=true;}
+  else if(b==='='){
+    if(cop&&cprev!==null){
+      var n=parseFloat(cv);
+      if(cop==='/')cv=String(cprev/n);
+      else if(cop==='*')cv=String(cprev*n);
+      else if(cop==='-')cv=String(cprev-n);
+      else if(cop==='+')cv=String(cprev+n);
+      cop=null;cprev=null;
+    }
+  }
+  else if(b==='.'){if(creset){cv='0.';creset=false;}else if(cv.indexOf('.')===-1)cv+=b;}
+  else{if(cv==='0'||creset){cv=b;creset=false;}else cv+=b;}
+  d.textContent=cv;
+}
+
+// ── Terminal logic
+var termHistory = {help:'Commands: ls, pwd, whoami, date, echo, uname, clear',ls:'Downloads  Pictures  Music  Documents  Android  DCIM',pwd:'/sdcard',whoami:'shell',uname:'Linux android 5.15.0-android13',date:new Date().toString(),clear:'__clear__'};
+function termRun() {
+  var inp=document.getElementById('tin'), out=document.getElementById('tout');
+  if(!inp||!out)return;
+  var cmd=inp.value.trim(); inp.value='';
+  var l=document.createElement('div'); l.style.color='#fff'; l.textContent='$ '+cmd; out.appendChild(l);
+  var key=cmd.split(' ')[0];
+  var res=termHistory[key];
+  if(!res&&cmd.indexOf('echo ')===0)res=cmd.slice(5);
+  if(!res)res=key+': not found';
+  if(res==='__clear__'){out.innerHTML='';return;}
+  var r=document.createElement('div'); r.textContent=res; out.appendChild(r);
   out.scrollTop=out.scrollHeight;
 }
 
-// ── Navigation ──
-function goHome() {
-  const sv = document.getElementById('stream-view');
-  const hs = document.getElementById('home-screen');
-  sv.classList.remove('active');
-  hs.style.display = '';
-  isStreaming = false;
-  currentApp = 'home';
-  if (wsConn) wsConn.send(JSON.stringify({ type: 'key', key: 'home' }));
-}
-
-function goBack() { sendKey('back'); }
-
-function showRecents() {
-  sendKey('recent');
-  toast('Recent apps');
-}
-
-// ── Key / touch events ──
-function sendKey(key) {
-  if (wsConn) {
-    wsConn.send(JSON.stringify({ type: 'key', key }));
-    log('Key: ' + key, 'system');
-  } else {
-    log('Key: ' + key + ' (no backend)', 'warn');
-    toast(key);
-  }
-}
-
-function sendTouchEvent(type, x1, y1, x2, y2) {
-  if (!wsConn) return;
-  const screen = document.getElementById('phone-screen');
-  const rect = screen.getBoundingClientRect();
-  const scaleX = 1080 / rect.width;
-  const scaleY = 1920 / rect.height;
-  wsConn.send(JSON.stringify({
-    type: 'touch', gesture: type,
-    x: Math.round(x1 * scaleX), y: Math.round(y1 * scaleY),
-    x2: x2 ? Math.round(x2 * scaleX) : undefined,
-    y2: y2 ? Math.round(y2 * scaleY) : undefined
-  }));
-}
-
-// ── ADB console ──
-async function runAdb() {
-  const input = document.getElementById('adb-input');
-  const cmd = input.value.trim();
-  if (!cmd) return;
-  input.value = '';
-  log('$ ' + cmd, 'info');
-  if (!backendUrl) { log('No backend connected', 'error'); return; }
-  try {
-    const res = await fetch(backendUrl + '/api/adb', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: cmd, session_id: sessionId })
+// ── Backend / WebSocket
+function connectBackend() {
+  var url = document.getElementById('backend-url').value.trim().replace(/\/$/,'');
+  if (!url) { toast('Enter your Render URL first'); return; }
+  backendUrl = url;
+  localStorage.setItem('dw_backend', url);
+  setStatus('connecting...');
+  log('Connecting to '+url,'i');
+  fetch(url+'/api/status', {signal: AbortSignal.timeout(8000)})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      setStatus('connected');
+      log('Backend OK — Android '+d.android_version,'i');
+      toast('Backend connected!');
+      openWS(url);
+    })
+    .catch(function(){
+      setStatus('error');
+      log('Cannot reach backend','e');
+      toast('Cannot connect — check URL');
     });
-    const data = await res.json();
-    if (data.output) data.output.split('\n').forEach(l => log(l));
-    if (data.error) log(data.error, 'error');
-  } catch { log('ADB command failed', 'error'); }
 }
 
-// ── Session control ──
-async function restartEmulator() {
-  log('Restarting emulator...', 'warn');
-  goHome();
-  if (backendUrl && wsConn) wsConn.send(JSON.stringify({ type: 'restart' }));
-  toast('Restarting...');
+function openWS(url) {
+  var wsUrl = url.replace(/^http/,'ws')+'/ws';
+  try {
+    ws = new WebSocket(wsUrl);
+    ws.onopen = function(){ log('WebSocket connected','s'); };
+    ws.onmessage = function(e){
+      var m = JSON.parse(e.data);
+      if(m.type==='frame'){ updateFrame(m.data); }
+      if(m.type==='log'){ log(m.text, m.level||'i'); }
+      if(m.type==='ready'){ document.getElementById('loading').classList.add('hide'); }
+      if(m.type==='session'){ sessionId=m.id; }
+    };
+    ws.onerror = function(){ log('WebSocket error','e'); };
+    ws.onclose = function(){ ws=null; log('WebSocket closed','w'); };
+  } catch(e) { log('WS failed: '+e.message,'e'); }
 }
 
-function killSession() {
-  if (wsConn) { wsConn.close(); wsConn = null; }
-  goHome();
-  setStatus('disconnected');
-  log('Session ended', 'warn');
-  toast('Session ended');
+function launchStream(appId) {
+  document.getElementById('home-screen').style.display = 'none';
+  var av = document.getElementById('app-view');
+  av.classList.add('show');
+  document.getElementById('app-name').textContent = appId;
+  document.getElementById('stream-img').style.display = 'block';
+  document.getElementById('loading').classList.remove('hide');
+  document.getElementById('ld-text').textContent = 'Starting '+appId+'...';
+  streaming = true;
+  if(ws) ws.send(JSON.stringify({type:'launch',app_id:appId}));
+  setTimeout(function(){document.getElementById('loading').classList.add('hide');}, 15000);
 }
 
-function rotateScreen() {
-  sendKey('rotate');
-  toast('Rotate screen');
+function updateFrame(b64) {
+  var img = document.getElementById('stream-img');
+  img.src = 'data:image/jpeg;base64,'+b64;
+  img.style.display = 'block';
+  document.getElementById('loading').classList.add('hide');
 }
 
-// ── Setup Guide ──
-function showSetupGuide() {
-  const guide = `BACKEND SETUP GUIDE
-
-1. Clone the backend:
-   git clone [your repo]
-   cd backend
-
-2. Deploy to Railway (free):
-   railway login
-   railway init
-   railway up
-
-3. Or deploy to Render (free):
-   Connect GitHub repo at render.com
-   Set: Docker environment
-   Start command: node src/index.js
-
-4. Copy your deployment URL here
-   e.g. https://myapp.railway.app
-
-See README.md for full Docker setup.`;
-  alert(guide);
+// ── Upload
+function setupUpload() {
+  var box = document.getElementById('upload-box');
+  var inp = document.getElementById('apk-file');
+  box.addEventListener('dragover',function(e){e.preventDefault();box.style.borderColor='#4fffb0';});
+  box.addEventListener('dragleave',function(){box.style.borderColor='';});
+  box.addEventListener('drop',function(e){
+    e.preventDefault(); box.style.borderColor='';
+    var f=e.dataTransfer.files[0];
+    if(f&&f.name.endsWith('.apk'))uploadApk(f); else toast('Drop an .apk file');
+  });
+  inp.addEventListener('change',function(){if(inp.files[0])uploadApk(inp.files[0]);});
 }
 
-// ── Helpers ──
+function uploadApk(file) {
+  if(!backendUrl){toast('Connect backend first');return;}
+  var pw=document.getElementById('prog-wrap'), pf=document.getElementById('prog-fill'), pl=document.getElementById('prog-label');
+  pw.style.display='block';
+  log('Uploading '+file.name,'i');
+  var fd=new FormData(); fd.append('apk',file);
+  var xhr=new XMLHttpRequest();
+  xhr.open('POST',backendUrl+'/api/upload');
+  xhr.upload.onprogress=function(e){var p=Math.round(e.loaded/e.total*100);pf.style.width=p+'%';pl.textContent='Uploading... '+p+'%';};
+  xhr.onload=function(){
+    if(xhr.status===200){
+      var res=JSON.parse(xhr.responseText);
+      pl.textContent='Done!'; log('APK uploaded — launching...','i');
+      launchStream(res.app_id);
+    } else { pl.textContent='Failed'; log('Upload error','e'); }
+    setTimeout(function(){pw.style.display='none';},3000);
+  };
+  xhr.onerror=function(){pl.textContent='Failed';log('Upload failed','e');setTimeout(function(){pw.style.display='none';},3000);};
+  xhr.send(fd);
+}
+
+// ── ADB
+function runAdb() {
+  var cmd=document.getElementById('adb-cmd').value.trim();
+  if(!cmd)return;
+  document.getElementById('adb-cmd').value='';
+  log('$ '+cmd,'i');
+  if(!backendUrl){log('No backend','e');return;}
+  fetch(backendUrl+'/api/adb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})})
+    .then(function(r){return r.json();})
+    .then(function(d){if(d.output)d.output.split('\n').forEach(function(l){log(l,'l');});if(d.error)log(d.error,'e');})
+    .catch(function(){log('ADB failed','e');});
+}
+
+// ── Controls
+function sendKey(k) {
+  if(ws) ws.send(JSON.stringify({type:'key',key:k}));
+  log('Key: '+k,'s');
+  toast(k);
+}
+function restartEmu() { if(ws)ws.send(JSON.stringify({type:'restart'})); goHome(); toast('Restarting...'); }
+function killSession() { if(ws){ws.close();ws=null;} goHome(); setStatus('disconnected'); toast('Session ended'); }
+
+// ── Helpers
 function setStatus(s) {
-  const dot = document.getElementById('status-dot');
-  const text = document.getElementById('status-text');
-  text.textContent = s;
-  dot.classList.toggle('connected', s === 'connected');
+  document.getElementById('status-txt').textContent=s;
+  document.getElementById('dot').classList.toggle('on', s==='connected');
 }
-
-function log(msg, level = '') {
-  const c = document.getElementById('log-console');
-  const line = document.createElement('div');
-  line.className = 'log-line ' + level;
-  const t = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  line.textContent = '[' + t + '] ' + msg;
-  c.appendChild(line);
-  c.scrollTop = c.scrollHeight;
+function log(msg,cls) {
+  var box=document.getElementById('log-box');
+  var t=new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var d=document.createElement('div'); d.className=cls||'l'; d.textContent='['+t+'] '+msg;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
 }
-
 function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2200);
 }
 </script>
 </body>
