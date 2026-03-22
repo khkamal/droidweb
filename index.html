@@ -1,183 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DroidWeb — Android Emulator</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
+:root {
+  --bg:#0a0a0f; --surf:#13131a; --surf2:#1c1c26; --border:#2a2a3a;
+  --text:#e8e8f0; --muted:#666; --accent:#4fffb0; --accent2:#7b6fff;
+  --danger:#ff4f6b; --warn:#ffd166;
+}
+[data-theme="light"] {
+  --bg:#f0f0f5; --surf:#ffffff; --surf2:#f5f5fa; --border:#dddde8;
+  --text:#1a1a2a; --muted:#888; --accent:#00b077; --accent2:#6050dd;
+  --danger:#e02040; --warn:#d08000;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0a0f;color:#e8e8f0;font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-nav{height:52px;background:#13131a;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
-.logo{font-family:'Space Mono',monospace;font-size:15px;color:#4fffb0}
-.logo span{color:#555}
-.chip{padding:3px 10px;border-radius:20px;font-size:11px;background:rgba(79,255,176,0.08);color:#4fffb0;border:1px solid rgba(79,255,176,0.2)}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;transition:background 0.2s,color 0.2s}
+/* NAV */
+nav{height:52px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.logo{font-family:'Space Mono',monospace;font-size:15px;color:var(--accent);font-weight:700}
+.logo span{color:var(--muted)}
+.chip{padding:3px 10px;border-radius:20px;font-size:11px;background:rgba(79,255,176,0.08);color:var(--accent);border:1px solid rgba(79,255,176,0.2)}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.dot{width:8px;height:8px;border-radius:50%;background:#444;transition:background 0.3s}
-.dot.on{background:#4fffb0;box-shadow:0 0 6px #4fffb0}
-.status{font-size:11px;color:#666;font-family:'Space Mono',monospace}
-.main{display:flex;flex:1;overflow:hidden}
-.sidebar{width:260px;flex-shrink:0;background:#13131a;border-right:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column}
-.sec{padding:14px;border-bottom:1px solid #2a2a3a}
-.sec-label{font-size:10px;letter-spacing:1.5px;color:#555;text-transform:uppercase;margin-bottom:10px;font-weight:600}
-.upload-box{border:1.5px dashed #2a2a3a;border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
-.upload-box:hover{border-color:#4fffb0;background:rgba(79,255,176,0.03)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background 0.3s;flex-shrink:0}
+.dot.on{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.status{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+.theme-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surf2);color:var(--text);cursor:pointer;font-size:13px;transition:all 0.15s}
+.theme-btn:hover{border-color:var(--accent2)}
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* SIDEBAR */
+.sidebar{width:256px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.sec{padding:12px;border-bottom:1px solid var(--border)}
+.sec-label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+/* Upload */
+.upload-box{border:1.5px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.upload-box:hover{border-color:var(--accent);background:rgba(79,255,176,0.03)}
 .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-box p{font-size:12px;color:#555;margin-top:6px;line-height:1.5}
-.upload-box strong{color:#e8e8f0}
-.app-btn{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all 0.15s;width:100%;background:transparent;color:#e8e8f0;text-align:left;font-family:'DM Sans',sans-serif}
-.app-btn:hover{background:#1c1c26;border-color:#2a2a3a}
+.upload-box p{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.upload-box strong{color:var(--text)}
+/* App buttons */
+.app-btn{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:all 0.15s;width:100%;background:transparent;color:var(--text);text-align:left;font-family:'DM Sans',sans-serif}
+.app-btn:hover{background:var(--surf2);border-color:var(--border)}
 .app-btn.active{background:rgba(79,255,176,0.06);border-color:rgba(79,255,176,0.3)}
-.app-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.app-name{font-size:13px;font-weight:500}
-.app-sub{font-size:11px;color:#555}
-.badge{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(123,111,255,0.1);color:#7b6fff}
-.field-label{font-size:11px;color:#555;margin-bottom:5px;display:block}
-input.url-input{width:100%;padding:8px 10px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:6px;color:#e8e8f0;font-size:12px;font-family:'Space Mono',monospace;outline:none;transition:border-color 0.2s;margin-bottom:8px}
-input.url-input:focus{border-color:#7b6fff}
-.btn{padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:6px}
-.btn-green{background:#4fffb0;color:#000}
-.btn-green:hover{background:#6fffbf}
-.btn-gray{background:#1c1c26;color:#e8e8f0;border:1px solid #2a2a3a}
-.btn-gray:hover{border-color:#7b6fff}
-.center{flex:1;display:flex;align-items:center;justify-content:center;background:#0a0a0f;padding:20px}
-.phone{width:300px;height:620px;background:#141420;border-radius:42px;border:2px solid #2a2a3a;box-shadow:0 0 0 1px #1a1a28,0 30px 60px rgba(0,0,0,0.5);position:relative;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.app-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.app-name{font-size:12px;font-weight:500;line-height:1.2}
+.app-sub{font-size:10px;color:var(--muted)}
+.badge{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(123,111,255,0.1);color:var(--accent2);flex-shrink:0}
+.badge.ready{background:rgba(79,255,176,0.1);color:var(--accent)}
+/* Delete button */
+.del-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;opacity:0;transition:opacity 0.15s;flex-shrink:0}
+.app-btn:hover .del-btn{opacity:1}
+/* URL input */
+.url-input{width:100%;padding:7px 10px;background:var(--surf2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;font-family:'Space Mono',monospace;outline:none;transition:border-color 0.2s;margin-bottom:7px}
+.url-input:focus{border-color:var(--accent2)}
+.btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:5px}
+.btn-green{background:var(--accent);color:#000}
+.btn-green:hover{filter:brightness(1.1)}
+.btn-gray{background:var(--surf2);color:var(--text);border:1px solid var(--border)}
+.btn-gray:hover{border-color:var(--accent2)}
+/* CENTER */
+.center{flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:16px;overflow:hidden}
+/* PHONE */
+.phone{width:296px;flex-shrink:0;display:flex;flex-direction:column;background:#141420;border-radius:42px;border:2px solid #2a2a3a;box-shadow:0 0 0 1px #1a1a28,0 30px 60px rgba(0,0,0,0.5);overflow:hidden;position:relative}
 .phone::after{content:'';position:absolute;left:-4px;top:150px;width:4px;height:40px;background:#222;border-radius:3px 0 0 3px;box-shadow:0 54px 0 #222}
-.phone-top{height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.notch{width:100px;height:24px;background:#0a0a10;border-radius:0 0 14px 14px;display:flex;align-items:center;justify-content:center;gap:6px}
-.ncam{width:8px;height:8px;border-radius:50%;background:#1a1a24}
-.nspk{width:36px;height:3px;background:#1a1a24;border-radius:2px}
-.screen{flex:1;background:#000;position:relative;overflow:hidden;cursor:pointer}
-.sbar{height:22px;background:rgba(0,0,0,0.6);display:flex;align-items:center;padding:0 12px;position:absolute;top:0;left:0;right:0;z-index:10;font-size:10px;font-family:'Space Mono',monospace;color:#fff}
-.sbar-icons{margin-left:auto;font-size:9px}
+.phone-top{height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#0a0a10}
+.notch{width:96px;height:22px;background:#0a0a10;border-radius:0 0 12px 12px;display:flex;align-items:center;justify-content:center;gap:5px}
+.ncam{width:7px;height:7px;border-radius:50%;background:#1a1a24}
+.nspk{width:32px;height:3px;background:#1a1a24;border-radius:2px}
+/* SCREEN */
+.screen{width:100%;background:#000;position:relative;overflow:hidden;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.sbar{height:20px;background:rgba(0,0,0,0.7);display:flex;align-items:center;padding:0 10px;position:absolute;top:0;left:0;right:0;z-index:10;font-size:9px;font-family:'Space Mono',monospace;color:#fff;pointer-events:none}
+.sbar-icons{margin-left:auto;font-size:8px}
+/* Home screen */
 .home-screen{position:absolute;inset:0;background:linear-gradient(160deg,#1a1030,#0d1a2e 50%,#0a100a);display:flex;flex-direction:column}
 .woverlay{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 30%,rgba(79,255,176,0.07) 0%,transparent 60%);pointer-events:none}
-.hdate{padding:44px 0 6px;text-align:center;position:relative;z-index:1}
-.htime{font-size:50px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1}
-.hdatestr{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px}
-.appgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px;margin-top:auto;position:relative;z-index:1}
-.happ{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-.happ-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform 0.1s}
-.happ:active .happ-icon{transform:scale(0.9)}
-.happ-label{font-size:9px;color:rgba(255,255,255,0.7);text-align:center}
-.dock{margin:6px 12px 10px;background:rgba(255,255,255,0.07);border-radius:18px;padding:8px;display:flex;justify-content:space-around}
-.abar{height:34px;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:space-around;padding:0 20px;position:absolute;bottom:0;left:0;right:0;z-index:10}
-.nbtn{cursor:pointer;opacity:0.6;font-size:13px;padding:3px 8px;transition:opacity 0.15s}
+.hdate{padding:40px 0 4px;text-align:center;position:relative;z-index:1}
+.htime{font-size:48px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1}
+.hdatestr{font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px}
+.appgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px;margin-top:auto;position:relative;z-index:1}
+.happ{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.happ-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;transition:transform 0.1s;box-shadow:0 3px 8px rgba(0,0,0,0.3)}
+.happ:active .happ-icon{transform:scale(0.88)}
+.happ-label{font-size:9px;color:rgba(255,255,255,0.75);text-align:center}
+.dock{margin:6px 10px 8px;background:rgba(255,255,255,0.07);border-radius:16px;padding:7px;display:flex;justify-content:space-around}
+/* Android nav bar */
+.abar{height:32px;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:space-around;padding:0 16px;position:absolute;bottom:0;left:0;right:0;z-index:10;flex-shrink:0}
+.nbtn{cursor:pointer;opacity:0.65;font-size:13px;padding:3px 10px;transition:all 0.1s;-webkit-tap-highlight-color:transparent;border:none;background:transparent;color:#fff}
 .nbtn:hover{opacity:1}
+.nbtn:active{opacity:1;transform:scale(0.85)}
+/* App view */
 .app-view{position:absolute;inset:0;display:none;flex-direction:column}
 .app-view.show{display:flex}
-.app-header{height:22px;background:rgba(0,0,0,0.6);display:flex;align-items:center;padding:0 12px;z-index:10;font-size:10px;font-family:'Space Mono',monospace;color:#fff;flex-shrink:0}
+.app-header{height:20px;background:rgba(0,0,0,0.7);display:flex;align-items:center;padding:0 10px;z-index:10;font-size:9px;font-family:'Space Mono',monospace;color:#fff;flex-shrink:0;pointer-events:none}
 .app-content{flex:1;overflow:hidden;position:relative}
-.stream-img{width:100%;height:100%;object-fit:contain;background:#000}
-.loading{position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
-.loading.hide{display:none}
-.spinner{width:36px;height:36px;border:2px solid #2a2a3a;border-top-color:#4fffb0;border-radius:50%;animation:spin 0.8s linear infinite}
+.stream-img{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+/* Loading overlay */
+.loading{position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;transition:opacity 0.3s}
+.loading.hide{opacity:0;pointer-events:none}
+.spinner{width:34px;height:34px;border:2px solid #2a2a3a;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ldtext{font-size:12px;color:#555;margin-top:10px;font-family:'Space Mono',monospace}
-.phone-bot{height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hind{width:90px;height:3px;background:rgba(255,255,255,0.12);border-radius:2px}
-.right-panel{width:280px;flex-shrink:0;background:#13131a;border-left:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column}
+.ldtext{font-size:11px;color:var(--muted);margin-top:10px;font-family:'Space Mono',monospace;text-align:center;padding:0 20px}
+/* Touch ripple */
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);pointer-events:none;animation:rip 0.35s ease-out forwards;z-index:30}
+@keyframes rip{to{transform:scale(5);opacity:0}}
+/* Phone bottom */
+.phone-bot{height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#0a0a10}
+.hind{width:80px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px}
+/* RIGHT PANEL */
+.rpanel{width:272px;flex-shrink:0;background:var(--surf);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
 .ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.ctrl{padding:7px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid #2a2a3a;background:#1c1c26;color:#e8e8f0;text-align:center;transition:all 0.15s;font-family:'DM Sans',sans-serif}
-.ctrl:hover{border-color:#7b6fff}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.icard{background:#1c1c26;border-radius:7px;padding:9px;border:1px solid #2a2a3a}
-.icard-l{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.ctrl{padding:7px 4px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--surf2);color:var(--text);text-align:center;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.ctrl:hover{border-color:var(--accent2);background:rgba(123,111,255,0.05)}
+.ctrl:active{transform:scale(0.95)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.icard{background:var(--surf2);border-radius:7px;padding:8px;border:1px solid var(--border)}
+.icard-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
 .icard-v{font-size:12px;font-weight:500;font-family:'Space Mono',monospace}
-.log-box{background:#0a0a0a;border-radius:7px;padding:9px;height:160px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:10px;line-height:1.6}
-.log-box .l{color:#555}
-.log-box .i{color:#4fffb0}
-.log-box .w{color:#ffd166}
-.log-box .e{color:#ff4f6b}
-.log-box .s{color:#7b6fff}
-.adb-row{display:flex;gap:5px;margin-top:7px}
-.adb-input{flex:1;padding:6px 9px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:5px;color:#e8e8f0;font-size:11px;font-family:'Space Mono',monospace;outline:none}
-.adb-run{padding:6px 10px;background:#1c1c26;border:1px solid #2a2a3a;border-radius:5px;color:#e8e8f0;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:#1c1c26;border:1px solid #2a2a3a;padding:9px 18px;border-radius:8px;font-size:12px;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap}
+.log-box{background:var(--bg);border-radius:7px;padding:8px;height:150px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:10px;line-height:1.6;border:1px solid var(--border)}
+.l{color:var(--muted)}.i{color:var(--accent)}.w{color:var(--warn)}.e{color:var(--danger)}.s{color:var(--accent2)}
+.adb-row{display:flex;gap:5px;margin-top:6px}
+.adb-input{flex:1;padding:6px 8px;background:var(--surf2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;font-family:'Space Mono',monospace;outline:none}
+.adb-run{padding:6px 10px;background:var(--surf2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;cursor:pointer}
+/* Progress */
+.prog-wrap{margin-top:8px;display:none}
+.prog-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);width:0%;transition:width 0.3s}
+.prog-lbl{font-size:10px;color:var(--muted);margin-top:4px;font-family:'Space Mono',monospace}
+/* Toast */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surf2);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:12px;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap;color:var(--text)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Scrollbar */
 ::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
-
-/* Demo app styles */
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* Demo apps */
 .calc-wrap{background:#1a1a1a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace}
-.calc-display{flex:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:14px;font-size:32px;color:#fff;background:#111;word-break:break-all;min-height:80px}
+.calc-display{flex:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:12px;font-size:30px;color:#fff;background:#111;word-break:break-all;min-height:70px}
 .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#333}
-.calc-btn{padding:16px 0;font-size:16px;border:none;cursor:pointer;font-family:'Space Mono',monospace;color:#fff;background:#2a2a2a}
+.calc-btn{padding:14px 0;font-size:15px;border:none;cursor:pointer;font-family:'Space Mono',monospace;color:#fff;background:#2a2a2a;-webkit-tap-highlight-color:transparent}
+.calc-btn:active{filter:brightness(1.4)}
 .calc-btn.op{background:#f0a500;color:#000}
 .calc-btn.fn{background:#555;color:#000}
 .calc-btn.eq{background:#f0a500}
-.term-wrap{background:#0a0a0a;height:100%;display:flex;flex-direction:column;font-family:'Space Mono',monospace;font-size:11px}
-.term-out{flex:1;overflow-y:auto;padding:10px;color:#4fffb0;line-height:1.7}
-.term-row{display:flex;padding:6px 8px;gap:6px;border-top:1px solid #1a1a1a;align-items:center}
-.term-prompt{color:#4fffb0;flex-shrink:0}
-.term-in{flex:1;background:transparent;border:none;color:#4fffb0;font-family:'Space Mono',monospace;font-size:11px;outline:none}
-.set-wrap{background:#f0f0f0;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif}
-.set-head{background:#6200ea;padding:14px;color:#fff;font-size:15px;font-weight:600}
-.set-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-bottom:1px solid #eee;cursor:pointer}
-.set-item:hover{background:#f9f9f9}
-.set-icon{font-size:18px;width:24px;text-align:center}
-.set-name{font-size:13px;color:#333}
-.set-arrow{margin-left:auto;color:#999;font-size:12px}
-.files-wrap{background:#fff;height:100%;overflow-y:auto;font-family:'DM Sans',sans-serif}
-.files-head{background:#1976d2;padding:14px;color:#fff;font-size:15px;font-weight:600}
-.file-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #eee;cursor:pointer}
-.file-icon{font-size:20px;width:24px;text-align:center}
-.file-name{font-size:13px;color:#333}
-.file-meta{font-size:10px;color:#999;margin-top:2px}
+.term-wrap{background:#0a0a0a;height:100%;display:flex;flex-direction:column}
+.term-out{flex:1;overflow-y:auto;padding:8px;color:#4fffb0;line-height:1.6;font-family:'Space Mono',monospace;font-size:10px}
+.term-row{display:flex;padding:5px 7px;gap:5px;border-top:1px solid #1a1a1a;align-items:center}
+.term-in{flex:1;background:transparent;border:none;color:#4fffb0;font-family:'Space Mono',monospace;font-size:10px;outline:none}
+.set-wrap{background:#f0f0f0;height:100%;overflow-y:auto}
+.set-head{background:#6200ea;padding:12px 14px;color:#fff;font-size:14px;font-weight:600}
+.set-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fff;border-bottom:1px solid #eee;cursor:pointer;font-family:'DM Sans',sans-serif}
+.set-item:active{background:#f0f0f0}
+.files-wrap{background:#fff;height:100%;overflow-y:auto}
+.files-head{background:#1976d2;padding:12px 14px;color:#fff;font-size:14px;font-weight:600}
+.file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #eee;font-family:'DM Sans',sans-serif}
 .default-app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;background:#1a1a2a;padding:20px;text-align:center}
 </style>
 </head>
 <body>
-
 <nav>
   <div class="logo">Droid<span>Web</span></div>
   <div class="chip">Android Emulator</div>
   <div class="nav-right">
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
     <div class="dot" id="dot"></div>
     <span class="status" id="status-txt">disconnected</span>
   </div>
 </nav>
 
 <div class="main">
-
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sec">
     <div class="sec-label">Upload APK</div>
     <div class="upload-box" id="upload-box">
       <input type="file" id="apk-file" accept=".apk"/>
-      <div style="font-size:26px">📦</div>
+      <div style="font-size:24px">📦</div>
       <p><strong>Drop APK here</strong><br/>or click to browse</p>
     </div>
-    <div id="prog-wrap" style="display:none;margin-top:8px">
-      <div style="height:3px;background:#2a2a3a;border-radius:2px;overflow:hidden">
-        <div id="prog-fill" style="height:100%;background:#4fffb0;width:0%;transition:width 0.3s"></div>
-      </div>
-      <div id="prog-label" style="font-size:10px;color:#555;margin-top:4px;font-family:'Space Mono',monospace">Uploading...</div>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="prog-lbl" id="prog-lbl">Uploading...</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">Installed Apps</div>
+    <div id="app-list" style="display:flex;flex-direction:column;gap:4px">
+      <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0">No APKs uploaded yet</div>
     </div>
   </div>
 
   <div class="sec">
     <div class="sec-label">Demo Apps</div>
-    <div style="display:flex;flex-direction:column;gap:5px">
-      <button class="app-btn active" onclick="openApp('calculator')">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="app-btn" onclick="openApp('calculator')">
         <div class="app-icon" style="background:#1a3a2a">🧮</div>
-        <div><div class="app-name">Calculator</div><div class="app-sub">Demo app</div></div>
+        <div><div class="app-name">Calculator</div><div class="app-sub">Demo</div></div>
         <span class="badge">demo</span>
       </button>
       <button class="app-btn" onclick="openApp('terminal')">
         <div class="app-icon" style="background:#0a1a0a">💻</div>
-        <div><div class="app-name">Terminal</div><div class="app-sub">Demo app</div></div>
+        <div><div class="app-name">Terminal</div><div class="app-sub">Demo</div></div>
         <span class="badge">demo</span>
       </button>
       <button class="app-btn" onclick="openApp('settings')">
         <div class="app-icon" style="background:#2a2a1a">⚙️</div>
-        <div><div class="app-name">Settings</div><div class="app-sub">Demo app</div></div>
+        <div><div class="app-name">Settings</div><div class="app-sub">Demo</div></div>
         <span class="badge">demo</span>
       </button>
       <button class="app-btn" onclick="openApp('files')">
         <div class="app-icon" style="background:#2a1a0a">📁</div>
-        <div><div class="app-name">Files</div><div class="app-sub">Demo app</div></div>
+        <div><div class="app-name">Files</div><div class="app-sub">Demo</div></div>
         <span class="badge">demo</span>
       </button>
     </div>
@@ -185,10 +220,9 @@ input.url-input:focus{border-color:#7b6fff}
 
   <div class="sec">
     <div class="sec-label">Backend URL</div>
-    <label class="field-label">Render / Railway URL</label>
     <input class="url-input" type="text" id="backend-url" placeholder="https://yourapp.onrender.com"/>
     <button class="btn btn-green" onclick="connectBackend()">Connect</button>
-    <button class="btn btn-gray" onclick="alert('1. Deploy backend to Render.com\n2. Copy your Render URL\n3. Paste it above and click Connect')">Setup Guide</button>
+    <button class="btn btn-gray" onclick="alert('1. Run GitHub Actions workflow\n2. Copy ngrok URL from logs\n3. Paste it above and click Connect')">Setup Guide</button>
   </div>
 </div>
 
@@ -199,14 +233,14 @@ input.url-input:focus{border-color:#7b6fff}
       <div class="notch"><div class="ncam"></div><div class="nspk"></div><div class="ncam"></div></div>
     </div>
 
-    <div class="screen" id="screen">
+    <div class="screen" id="screen" style="height:540px">
       <!-- Home screen -->
       <div class="home-screen" id="home-screen">
         <div class="woverlay"></div>
-        <div class="sbar"><span id="home-time" style="font-size:10px;font-weight:700">12:00</span><span class="sbar-icons">📶🔋</span></div>
+        <div class="sbar"><span id="home-t" style="font-weight:700;font-size:9px">12:00</span><span class="sbar-icons">📶🔋</span></div>
         <div class="hdate">
-          <div class="htime" id="big-time">12:00</div>
-          <div class="hdatestr" id="big-date">Monday, March 22</div>
+          <div class="htime" id="big-t">12:00</div>
+          <div class="hdatestr" id="big-d">Monday, March 22</div>
         </div>
         <div class="appgrid">
           <div class="happ" onclick="openApp('calculator')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a3a2a,#0a2a1a)">🧮</div><div class="happ-label">Calc</div></div>
@@ -219,36 +253,36 @@ input.url-input:focus{border-color:#7b6fff}
           <div class="happ" onclick="openApp('games')"><div class="happ-icon" style="background:linear-gradient(135deg,#2a1a3a,#1a0a2a)">🎮</div><div class="happ-label">Games</div></div>
         </div>
         <div class="dock">
-          <div class="happ" onclick="openApp('phone')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a6a1a,#0a4a0a);width:42px;height:42px">📞</div></div>
-          <div class="happ" onclick="openApp('messages')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a3a6a,#0a1a4a);width:42px;height:42px">💬</div></div>
-          <div class="happ" onclick="openApp('camera')"><div class="happ-icon" style="background:linear-gradient(135deg,#4a1a1a,#2a0a0a);width:42px;height:42px">📷</div></div>
-          <div class="happ" onclick="openApp('browser')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a1a4a,#0a0a2a);width:42px;height:42px">🌐</div></div>
+          <div class="happ" onclick="openApp('phone')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a6a1a,#0a4a0a);width:40px;height:40px">📞</div></div>
+          <div class="happ" onclick="openApp('messages')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a3a6a,#0a1a4a);width:40px;height:40px">💬</div></div>
+          <div class="happ" onclick="openApp('camera')"><div class="happ-icon" style="background:linear-gradient(135deg,#4a1a1a,#2a0a0a);width:40px;height:40px">📷</div></div>
+          <div class="happ" onclick="openApp('browser')"><div class="happ-icon" style="background:linear-gradient(135deg,#1a1a4a,#0a0a2a);width:40px;height:40px">🌐</div></div>
         </div>
-        <div class="abar">
-          <span class="nbtn" onclick="goHome()">◁</span>
-          <span class="nbtn" onclick="goHome()">○</span>
-          <span class="nbtn" onclick="toast('Recent apps')">□</span>
+        <div class="abar" style="position:relative;bottom:auto">
+          <button class="nbtn" onclick="goHome()">◁</button>
+          <button class="nbtn" onclick="goHome()">○</button>
+          <button class="nbtn" onclick="toast('Recent apps')">□</button>
         </div>
       </div>
 
-      <!-- App view -->
+      <!-- App / stream view -->
       <div class="app-view" id="app-view">
         <div class="app-header">
-          <span id="app-time" style="font-weight:700">12:00</span>
-          <span id="app-name" style="margin-left:8px;color:#4fffb0;font-size:9px">App</span>
+          <span id="app-t" style="font-weight:700">12:00</span>
+          <span id="app-name" style="margin-left:6px;color:#4fffb0;font-size:9px">App</span>
           <span class="sbar-icons" style="margin-left:auto">📶🔋</span>
         </div>
         <div class="app-content" id="app-content">
-          <img id="stream-img" class="stream-img" src="" alt="" style="display:none"/>
+          <img id="stream-img" class="stream-img" src="" alt="" style="display:none;cursor:crosshair"/>
           <div class="loading" id="loading">
             <div class="spinner"></div>
             <div class="ldtext" id="ld-text">Loading...</div>
           </div>
         </div>
-        <div class="abar">
-          <span class="nbtn" onclick="goBack()">◁</span>
-          <span class="nbtn" onclick="goHome()">○</span>
-          <span class="nbtn" onclick="toast('Recent apps')">□</span>
+        <div class="abar" style="position:relative;bottom:auto">
+          <button class="nbtn" onclick="sendKey('back')">◁</button>
+          <button class="nbtn" onclick="goHome()">○</button>
+          <button class="nbtn" onclick="sendKey('recent')">□</button>
         </div>
       </div>
     </div>
@@ -258,13 +292,13 @@ input.url-input:focus{border-color:#7b6fff}
 </div>
 
 <!-- RIGHT PANEL -->
-<div class="right-panel">
+<div class="rpanel">
   <div class="sec">
-    <div class="sec-label" style="margin-bottom:10px">Device Controls</div>
+    <div class="sec-label" style="margin-bottom:8px">Device Controls</div>
     <div class="ctrl-grid">
       <button class="ctrl" onclick="sendKey('volumeup')">🔊 Vol +</button>
       <button class="ctrl" onclick="sendKey('volumedown')">🔉 Vol −</button>
-      <button class="ctrl" onclick="goBack()">◁ Back</button>
+      <button class="ctrl" onclick="sendKey('back')">◁ Back</button>
       <button class="ctrl" onclick="goHome()">○ Home</button>
       <button class="ctrl" onclick="sendKey('recent')">□ Recent</button>
       <button class="ctrl" onclick="sendKey('screenshot')">📸 Shot</button>
@@ -274,20 +308,20 @@ input.url-input:focus{border-color:#7b6fff}
   </div>
 
   <div class="sec">
-    <div class="sec-label" style="margin-bottom:10px">Device Info</div>
+    <div class="sec-label" style="margin-bottom:8px">Device Info</div>
     <div class="info-grid">
-      <div class="icard"><div class="icard-l">Android</div><div class="icard-v">13.0</div></div>
-      <div class="icard"><div class="icard-l">RAM</div><div class="icard-v">2 GB</div></div>
+      <div class="icard"><div class="icard-l">Android</div><div class="icard-v" id="info-android">13.0</div></div>
+      <div class="icard"><div class="icard-l">RAM</div><div class="icard-v" id="info-ram">4 GB</div></div>
       <div class="icard"><div class="icard-l">Storage</div><div class="icard-v">8 GB</div></div>
       <div class="icard"><div class="icard-l">Arch</div><div class="icard-v">x86_64</div></div>
     </div>
   </div>
 
   <div class="sec">
-    <div class="sec-label" style="margin-bottom:8px">ADB Console</div>
+    <div class="sec-label" style="margin-bottom:7px">ADB Console</div>
     <div class="log-box" id="log-box">
-      <div class="s">$ DroidWeb v1.0</div>
-      <div class="l">Demo apps ready to use.</div>
+      <div class="s">$ DroidWeb v2.0</div>
+      <div class="l">Demo apps work offline.</div>
       <div class="l">Connect backend for real APKs.</div>
     </div>
     <div class="adb-row">
@@ -298,11 +332,10 @@ input.url-input:focus{border-color:#7b6fff}
 
   <div class="sec">
     <button class="btn btn-gray" onclick="restartEmu()">↺ Restart</button>
-    <button class="btn" style="background:rgba(255,79,107,0.1);color:#ff4f6b;border:1px solid rgba(255,79,107,0.2)" onclick="killSession()">✕ End Session</button>
+    <button class="btn" style="background:rgba(255,79,107,0.1);color:var(--danger);border:1px solid rgba(255,79,107,0.2)" onclick="killSession()">✕ End Session</button>
   </div>
 </div>
-
-</div><!-- end .main -->
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -312,12 +345,18 @@ var backendUrl = localStorage.getItem('dw_backend') || '';
 var ws = null;
 var sessionId = null;
 var streaming = false;
+var currentAppId = null;
+var installedApps = JSON.parse(localStorage.getItem('dw_apps') || '[]');
+var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 // ── Boot
 window.onload = function() {
   tick();
   setInterval(tick, 1000);
   setupUpload();
+  setupTouchInput();
+  renderInstalledApps();
+  if (localStorage.getItem('dw_theme') === 'light') setTheme('light');
   if (backendUrl) {
     document.getElementById('backend-url').value = backendUrl;
   }
@@ -327,21 +366,171 @@ function tick() {
   var now = new Date();
   var t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
   var d = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  document.getElementById('home-time').textContent = t;
-  document.getElementById('big-time').textContent = t;
-  document.getElementById('big-date').textContent = d;
-  document.getElementById('app-time').textContent = t;
+  document.getElementById('home-t').textContent = t;
+  document.getElementById('big-t').textContent = t;
+  document.getElementById('big-d').textContent = d;
+  document.getElementById('app-t').textContent = t;
+}
+
+// ── Theme
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('dw_theme', t);
+  document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+}
+
+// ── Installed apps list
+function renderInstalledApps() {
+  var list = document.getElementById('app-list');
+  if (installedApps.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0">No APKs uploaded yet</div>';
+    return;
+  }
+  list.innerHTML = '';
+  installedApps.forEach(function(app) {
+    var btn = document.createElement('button');
+    btn.className = 'app-btn';
+    btn.id = 'app-' + app.id;
+    btn.innerHTML =
+      '<div class="app-icon" style="background:#1a2a3a">📱</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="app-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + app.name + '</div>' +
+        '<div class="app-sub">Uploaded APK</div>' +
+      '</div>' +
+      '<span class="badge ready">ready</span>' +
+      '<button class="del-btn" title="Uninstall" onclick="uninstallApp(event,\'' + app.id + '\',\'' + app.pkg + '\')">✕</button>';
+    btn.onclick = function(e) {
+      if (e.target.classList.contains('del-btn')) return;
+      launchStream(app.id, app.name);
+    };
+    list.appendChild(btn);
+  });
+}
+
+function uninstallApp(e, appId, pkg) {
+  e.stopPropagation();
+  if (!confirm('Uninstall ' + appId + '?')) return;
+  // Remove from list
+  installedApps = installedApps.filter(function(a) { return a.id !== appId; });
+  localStorage.setItem('dw_apps', JSON.stringify(installedApps));
+  renderInstalledApps();
+  // Uninstall from Android if connected
+  if (ws && pkg) {
+    ws.send(JSON.stringify({ type: 'adb', cmd: 'uninstall ' + pkg }));
+    log('Uninstalling ' + pkg, 'w');
+  }
+  toast('App removed');
+}
+
+// ── Touch input on stream
+function setupTouchInput() {
+  var img = document.getElementById('stream-img');
+
+  // Mouse click → tap
+  img.addEventListener('click', function(e) {
+    if (!streaming) return;
+    var coords = getCoords(e, img);
+    sendTouch('tap', coords.x, coords.y);
+    spawnRipple(e.clientX, e.clientY, img);
+  });
+
+  // Mouse drag → swipe
+  img.addEventListener('mousedown', function(e) {
+    touchStartX = e.clientX; touchStartY = e.clientY; touchStartTime = Date.now();
+  });
+  img.addEventListener('mouseup', function(e) {
+    var dx = e.clientX - touchStartX, dy = e.clientY - touchStartY;
+    var dt = Date.now() - touchStartTime;
+    if ((Math.abs(dx) > 20 || Math.abs(dy) > 20) && dt < 800) {
+      var c1 = getCoords({clientX:touchStartX, clientY:touchStartY}, img);
+      var c2 = getCoords(e, img);
+      sendTouch('swipe', c1.x, c1.y, c2.x, c2.y);
+    }
+  });
+
+  // Touch events (mobile)
+  img.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+  }, {passive:false});
+  img.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    var ex = e.changedTouches[0].clientX, ey = e.changedTouches[0].clientY;
+    var dx = ex - touchStartX, dy = ey - touchStartY;
+    var dt = Date.now() - touchStartTime;
+    var coords;
+    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+      var c1 = getCoords({clientX:touchStartX, clientY:touchStartY}, img);
+      var c2 = getCoords({clientX:ex, clientY:ey}, img);
+      sendTouch('swipe', c1.x, c1.y, c2.x, c2.y);
+    } else {
+      coords = getCoords({clientX:ex, clientY:ey}, img);
+      sendTouch('tap', coords.x, coords.y);
+    }
+  }, {passive:false});
+
+  // Keyboard input
+  document.addEventListener('keydown', function(e) {
+    if (!streaming) return;
+    // Don't capture when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var keyMap = {
+      'Backspace': 'KEYCODE_DEL',
+      'Enter':     'KEYCODE_ENTER',
+      'Escape':    'KEYCODE_BACK',
+      'ArrowUp':   'KEYCODE_DPAD_UP',
+      'ArrowDown': 'KEYCODE_DPAD_DOWN',
+      'ArrowLeft': 'KEYCODE_DPAD_LEFT',
+      'ArrowRight':'KEYCODE_DPAD_RIGHT',
+      ' ':         'KEYCODE_SPACE',
+      'Tab':       'KEYCODE_TAB',
+    };
+    if (keyMap[e.key]) {
+      e.preventDefault();
+      if (ws) ws.send(JSON.stringify({ type: 'keycode', code: keyMap[e.key] }));
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      // Type text character
+      e.preventDefault();
+      if (ws) ws.send(JSON.stringify({ type: 'text', text: e.key }));
+    }
+  });
+}
+
+function getCoords(e, el) {
+  var rect = el.getBoundingClientRect();
+  var relX = (e.clientX - rect.left) / rect.width;
+  var relY = (e.clientY - rect.top) / rect.height;
+  // Android 1080x1920 resolution
+  return { x: Math.round(relX * 1080), y: Math.round(relY * 1920) };
+}
+
+function sendTouch(type, x, y, x2, y2) {
+  if (!ws) return;
+  ws.send(JSON.stringify({ type: 'touch', gesture: type, x: x, y: y, x2: x2, y2: y2 }));
+}
+
+function spawnRipple(cx, cy, el) {
+  var rect = el.getBoundingClientRect();
+  var r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.cssText = 'left:'+(cx-rect.left-10)+'px;top:'+(cy-rect.top-10)+'px;width:20px;height:20px';
+  el.parentNode.appendChild(r);
+  setTimeout(function(){ r.remove(); }, 400);
 }
 
 // ── App navigation
 function openApp(name) {
-  log('Opening '+name,'s');
-  document.querySelectorAll('.app-btn').forEach(function(b){b.classList.remove('active');});
   var builtins = ['calculator','terminal','settings','files','camera','maps','messages','games','phone','browser'];
   if (builtins.indexOf(name) !== -1) {
     showDemoApp(name);
   } else if (ws) {
-    launchStream(name);
+    launchStream(name, name);
   } else {
     toast('Connect backend to run APKs');
   }
@@ -354,205 +543,154 @@ function showDemoApp(name) {
   document.getElementById('app-name').textContent = name;
   document.getElementById('stream-img').style.display = 'none';
   document.getElementById('loading').classList.add('hide');
-
-  // Remove old content
+  streaming = false;
   var old = document.getElementById('demo-ui');
   if (old) old.remove();
-
   var div = document.createElement('div');
   div.id = 'demo-ui';
   div.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
   div.innerHTML = getDemoHTML(name);
   document.getElementById('app-content').appendChild(div);
-  streaming = false;
 }
 
 function getDemoHTML(name) {
-  if (name === 'calculator') {
-    return '<div class="calc-wrap">' +
-      '<div class="calc-display" id="cd">0</div>' +
-      '<div class="calc-grid">' +
-      '<button class="calc-btn fn" onclick="cb(\'C\')">C</button>' +
-      '<button class="calc-btn fn" onclick="cb(\'+/-\')">+/-</button>' +
-      '<button class="calc-btn fn" onclick="cb(\'%\')">%</button>' +
-      '<button class="calc-btn op" onclick="cb(\'/\')">÷</button>' +
-      '<button class="calc-btn" onclick="cb(\'7\')">7</button>' +
-      '<button class="calc-btn" onclick="cb(\'8\')">8</button>' +
-      '<button class="calc-btn" onclick="cb(\'9\')">9</button>' +
-      '<button class="calc-btn op" onclick="cb(\'*\')">×</button>' +
-      '<button class="calc-btn" onclick="cb(\'4\')">4</button>' +
-      '<button class="calc-btn" onclick="cb(\'5\')">5</button>' +
-      '<button class="calc-btn" onclick="cb(\'6\')">6</button>' +
-      '<button class="calc-btn op" onclick="cb(\'-\')">−</button>' +
-      '<button class="calc-btn" onclick="cb(\'1\')">1</button>' +
-      '<button class="calc-btn" onclick="cb(\'2\')">2</button>' +
-      '<button class="calc-btn" onclick="cb(\'3\')">3</button>' +
-      '<button class="calc-btn op" onclick="cb(\'+\')">+</button>' +
-      '<button class="calc-btn" style="grid-column:span 2" onclick="cb(\'0\')">0</button>' +
-      '<button class="calc-btn" onclick="cb(\'.\')">.</button>' +
-      '<button class="calc-btn eq" onclick="cb(\'=\')">=</button>' +
-      '</div></div>';
-  }
-  if (name === 'terminal') {
-    return '<div class="term-wrap">' +
-      '<div class="term-out" id="tout"><div>Android 13 Shell</div><div style="color:#aaa">Type help for commands</div><br/></div>' +
-      '<div class="term-row"><span class="term-prompt">$</span><input class="term-in" id="tin" placeholder="enter command..." onkeydown="if(event.key===\'Enter\')termRun()"/></div>' +
-      '</div>';
-  }
-  if (name === 'settings') {
-    var items = [['📶','Network'],['📱','Devices'],['🔔','Notifications'],['🔋','Battery'],['🖥️','Display'],['🔊','Sound'],['💾','Storage'],['🔒','Security'],['👤','Accounts'],['⚙️','System']];
-    return '<div class="set-wrap"><div class="set-head">⚙️ Settings</div>' +
-      items.map(function(i){return '<div class="set-item" onclick="toast(\''+i[1]+'\')"><span class="set-icon">'+i[0]+'</span><span class="set-name">'+i[1]+'</span><span class="set-arrow">›</span></div>';}).join('') +
-      '</div>';
-  }
-  if (name === 'files') {
-    var files = [['📁','Downloads','12 items'],['📁','Pictures','34 items'],['📁','Music','8 items'],['📁','Documents','5 items'],['📄','notes.txt','2 KB'],['📦','myapp.apk','14 MB']];
-    return '<div class="files-wrap"><div class="files-head">📁 Files</div>' +
-      files.map(function(f){return '<div class="file-item"><span class="file-icon">'+f[0]+'</span><div><div class="file-name">'+f[1]+'</div><div class="file-meta">'+f[2]+'</div></div></div>';}).join('') +
-      '</div>';
-  }
-  // Default
+  if (name === 'calculator') return '<div class="calc-wrap"><div class="calc-display" id="cd">0</div><div class="calc-grid"><button class="calc-btn fn" onclick="cb(\'C\')">C</button><button class="calc-btn fn" onclick="cb(\'+/-\')">\xb1</button><button class="calc-btn fn" onclick="cb(\'%\')">%</button><button class="calc-btn op" onclick="cb(\'/\')">\xf7</button><button class="calc-btn" onclick="cb(\'7\')">7</button><button class="calc-btn" onclick="cb(\'8\')">8</button><button class="calc-btn" onclick="cb(\'9\')">9</button><button class="calc-btn op" onclick="cb(\'*\')">\xd7</button><button class="calc-btn" onclick="cb(\'4\')">4</button><button class="calc-btn" onclick="cb(\'5\')">5</button><button class="calc-btn" onclick="cb(\'6\')">6</button><button class="calc-btn op" onclick="cb(\'-\')">\u2212</button><button class="calc-btn" onclick="cb(\'1\')">1</button><button class="calc-btn" onclick="cb(\'2\')">2</button><button class="calc-btn" onclick="cb(\'3\')">3</button><button class="calc-btn op" onclick="cb(\'+\')">+</button><button class="calc-btn" style="grid-column:span 2" onclick="cb(\'0\')">0</button><button class="calc-btn" onclick="cb(\'.\')">.</button><button class="calc-btn eq" onclick="cb(\'=\')">=</button></div></div>';
+  if (name === 'terminal') return '<div class="term-wrap"><div class="term-out" id="tout"><div>Android 13 Shell</div><div style="color:#aaa">Type help for commands</div><br/></div><div class="term-row"><span style="color:#4fffb0;font-family:monospace;font-size:10px">$</span><input class="term-in" id="tin" placeholder="enter command..." onkeydown="if(event.key===\'Enter\')termRun()"/></div></div>';
+  if (name === 'settings') return '<div class="set-wrap"><div class="set-head">\u2699\ufe0f Settings</div>'+[['📶','Network'],['📱','Devices'],['🔔','Notifications'],['🔋','Battery'],['🖥️','Display'],['🔊','Sound'],['💾','Storage'],['🔒','Security'],['👤','Accounts'],['⚙️','System']].map(function(i){return '<div class="set-item" onclick="toast(\''+i[1]+'\')"><span style="font-size:18px;width:22px;text-align:center">'+i[0]+'</span><span style="font-size:13px;color:#333">'+i[1]+'</span><span style="margin-left:auto;color:#999;font-size:12px">›</span></div>';}).join('')+'</div>';
+  if (name === 'files') return '<div class="files-wrap"><div class="files-head">📁 Files</div>'+[['📁','Downloads','12 items'],['📁','Pictures','34 items'],['📁','Music','8 items'],['📁','Documents','5 items'],['📄','notes.txt','2 KB'],['📦','myapp.apk','14 MB']].map(function(f){return '<div class="file-item"><span style="font-size:20px;width:24px;text-align:center">'+f[0]+'</span><div><div style="font-size:13px;color:#333">'+f[1]+'</div><div style="font-size:10px;color:#999">'+f[2]+'</div></div></div>';}).join('')+'</div>';
   var icons = {phone:'📞',messages:'💬',camera:'📷',maps:'🗺️',games:'🎮',browser:'🌐'};
-  return '<div class="default-app">' +
-    '<div style="font-size:52px">'+(icons[name]||'📱')+'</div>' +
-    '<div style="font-size:15px;font-weight:500;text-transform:capitalize">'+name+'</div>' +
-    '<div style="font-size:11px;color:#555;margin-top:4px">Upload a real APK to run this app</div>' +
-    '</div>';
+  return '<div class="default-app"><div style="font-size:48px">'+(icons[name]||'📱')+'</div><div style="font-size:14px;font-weight:500;text-transform:capitalize">'+name+'</div><div style="font-size:11px;color:#555;margin-top:4px">Upload a real APK to run this app</div></div>';
 }
 
 function goHome() {
   document.getElementById('home-screen').style.display = '';
   document.getElementById('app-view').classList.remove('show');
   streaming = false;
+  currentAppId = null;
   var old = document.getElementById('demo-ui'); if (old) old.remove();
-  if (ws) ws.send(JSON.stringify({type:'key',key:'home'}));
+  document.getElementById('stream-img').style.display = 'none';
+  if (ws) ws.send(JSON.stringify({ type: 'key', key: 'home' }));
 }
 
-function goBack() {
-  if (streaming) { sendKey('back'); }
-  else { goHome(); }
-}
-
-// ── Calculator logic
-var cv='0', cop=null, cprev=null, creset=false;
+// ── Calc logic
+var cv='0',cop=null,cprev=null,creset=false;
 function cb(b) {
-  var d = document.getElementById('cd'); if (!d) return;
+  var d=document.getElementById('cd'); if(!d)return;
   if(b==='C'){cv='0';cop=null;cprev=null;creset=false;}
   else if(b==='+/-'){cv=String(-parseFloat(cv)||0);}
   else if(b==='%'){cv=String(parseFloat(cv)/100);}
   else if(b==='/'||b==='*'||b==='-'||b==='+'){cprev=parseFloat(cv);cop=b;creset=true;}
-  else if(b==='='){
-    if(cop&&cprev!==null){
-      var n=parseFloat(cv);
-      if(cop==='/')cv=String(cprev/n);
-      else if(cop==='*')cv=String(cprev*n);
-      else if(cop==='-')cv=String(cprev-n);
-      else if(cop==='+')cv=String(cprev+n);
-      cop=null;cprev=null;
-    }
-  }
+  else if(b==='='){if(cop&&cprev!==null){var n=parseFloat(cv);if(cop==='/')cv=String(cprev/n);else if(cop==='*')cv=String(cprev*n);else if(cop==='-')cv=String(cprev-n);else cv=String(cprev+n);cop=null;cprev=null;}}
   else if(b==='.'){if(creset){cv='0.';creset=false;}else if(cv.indexOf('.')===-1)cv+=b;}
   else{if(cv==='0'||creset){cv=b;creset=false;}else cv+=b;}
   d.textContent=cv;
 }
 
 // ── Terminal logic
-var termHistory = {help:'Commands: ls, pwd, whoami, date, echo, uname, clear',ls:'Downloads  Pictures  Music  Documents  Android  DCIM',pwd:'/sdcard',whoami:'shell',uname:'Linux android 5.15.0-android13',date:new Date().toString(),clear:'__clear__'};
-function termRun() {
-  var inp=document.getElementById('tin'), out=document.getElementById('tout');
+var TC={help:'Commands: ls, pwd, whoami, date, echo, uname, clear',ls:'Downloads  Pictures  Music  Documents  Android',pwd:'/sdcard',whoami:'shell',uname:'Linux android 5.15.0-android13',date:new Date().toString(),clear:'__clear__'};
+function termRun(){
+  var inp=document.getElementById('tin'),out=document.getElementById('tout');
   if(!inp||!out)return;
-  var cmd=inp.value.trim(); inp.value='';
-  var l=document.createElement('div'); l.style.color='#fff'; l.textContent='$ '+cmd; out.appendChild(l);
-  var key=cmd.split(' ')[0];
-  var res=termHistory[key];
+  var cmd=inp.value.trim();inp.value='';
+  var l=document.createElement('div');l.style.color='#fff';l.textContent='$ '+cmd;out.appendChild(l);
+  var key=cmd.split(' ')[0],res=TC[key];
   if(!res&&cmd.indexOf('echo ')===0)res=cmd.slice(5);
   if(!res)res=key+': not found';
   if(res==='__clear__'){out.innerHTML='';return;}
-  var r=document.createElement('div'); r.textContent=res; out.appendChild(r);
+  var r=document.createElement('div');r.textContent=res;out.appendChild(r);
   out.scrollTop=out.scrollHeight;
 }
 
-// ── Backend / WebSocket
+// ── Backend connection
 function connectBackend() {
   var url = document.getElementById('backend-url').value.trim().replace(/\/$/,'');
-  if (!url) { toast('Enter your Render URL first'); return; }
+  if (!url) { toast('Enter your backend URL first'); return; }
   backendUrl = url;
   localStorage.setItem('dw_backend', url);
   setStatus('connecting...');
   log('Connecting to '+url,'i');
-  fetch(url+'/api/status', {signal: AbortSignal.timeout(8000), headers: {'ngrok-skip-browser-warning': 'true'}})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      setStatus('connected');
-      log('Backend OK — Android '+d.android_version,'i');
-      toast('Backend connected!');
-      openWS(url);
-    })
-    .catch(function(){
-      setStatus('error');
-      log('Cannot reach backend','e');
-      toast('Cannot connect — check URL');
-        log('Try opening: '+url+'/api/status in browser','w');
-    });
+  fetch(url+'/api/status', {
+    signal: AbortSignal.timeout(8000),
+    headers: {'ngrok-skip-browser-warning':'true'}
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    setStatus('connected');
+    log('Backend OK — Android '+d.android_version,'i');
+    if (d.android_version) document.getElementById('info-android').textContent = d.android_version;
+    if (d.ram) document.getElementById('info-ram').textContent = d.ram;
+    toast('Backend connected!');
+    openWS(url);
+  })
+  .catch(function(e){
+    setStatus('error');
+    log('Cannot reach backend: '+e.message,'e');
+    toast('Cannot connect — check URL');
+  });
 }
 
 function openWS(url) {
-  var wsUrl = url.replace(/^http/,'ws')+'/ws';
+  var wsUrl = url.replace(/^https?/,'wss')+'/ws';
+  // Try wss first, fallback to ws
   try {
     ws = new WebSocket(wsUrl);
+    ws.binaryType = 'arraybuffer';
     ws.onopen = function(){ log('WebSocket connected','s'); };
     ws.onmessage = function(e){
-      var m = JSON.parse(e.data);
-      if(m.type==='frame'){ updateFrame(m.data); }
-      if(m.type==='log'){ log(m.text, m.level||'i'); }
-      if(m.type==='ready'){ document.getElementById('loading').classList.add('hide'); }
-      if(m.type==='session'){ sessionId=m.id; }
+      var m; try { m = JSON.parse(e.data); } catch { return; }
+      if (m.type==='frame') updateFrame(m.data);
+      if (m.type==='log')   log(m.text, m.level==='error'?'e':m.level==='warn'?'w':m.level==='system'?'s':'i');
+      if (m.type==='ready') { document.getElementById('loading').classList.add('hide'); }
+      if (m.type==='session') { sessionId=m.id; }
     };
-    ws.onerror = function(){ log('WebSocket error','e'); };
-    ws.onclose = function(){ ws=null; log('WebSocket closed','w'); };
-  } catch(e) { log('WS failed: '+e.message,'e'); }
+    ws.onerror = function(){
+      // Fallback to ws://
+      var wsUrl2 = url.replace(/^https?/,'ws')+'/ws';
+      ws = new WebSocket(wsUrl2);
+      ws.onopen = function(){ log('WebSocket connected (ws)','s'); };
+      ws.onmessage = function(e){
+        var m; try { m = JSON.parse(e.data); } catch { return; }
+        if (m.type==='frame') updateFrame(m.data);
+        if (m.type==='log')   log(m.text, m.level==='error'?'e':m.level==='warn'?'w':'i');
+        if (m.type==='ready') { document.getElementById('loading').classList.add('hide'); }
+        if (m.type==='session') { sessionId=m.id; }
+      };
+      ws.onerror = function(){ log('WebSocket failed','e'); };
+      ws.onclose = function(){ ws=null; log('WS closed','w'); };
+    };
+    ws.onclose = function(){ ws=null; log('WS closed','w'); };
+  } catch(e) { log('WS error: '+e.message,'e'); }
 }
 
-function launchStream(appId) {
+// ── Streaming
+function launchStream(appId, appName) {
+  currentAppId = appId;
   document.getElementById('home-screen').style.display = 'none';
   var av = document.getElementById('app-view');
   av.classList.add('show');
-  document.getElementById('app-name').textContent = appId;
+  document.getElementById('app-name').textContent = appName || appId;
   document.getElementById('stream-img').style.display = 'block';
-  document.getElementById('loading').classList.remove('hide');
-  document.getElementById('ld-text').textContent = 'Starting '+appId+'...';
+  var ld = document.getElementById('loading');
+  ld.classList.remove('hide');
+  document.getElementById('ld-text').textContent = 'Launching '+( appName||appId)+'...';
+  var old = document.getElementById('demo-ui'); if (old) old.remove();
   streaming = true;
-  if(ws) ws.send(JSON.stringify({type:'launch',app_id:appId}));
-  setTimeout(function(){document.getElementById('loading').classList.add('hide');}, 15000);
+  if (ws) ws.send(JSON.stringify({ type: 'launch', app_id: appId }));
+  // Auto-hide loading after 15s
+  setTimeout(function(){ ld.classList.add('hide'); }, 15000);
 }
 
 function updateFrame(b64) {
   var img = document.getElementById('stream-img');
-  img.src = 'data:image/jpeg;base64,'+b64;
-  img.style.display = 'block';
+  img.src = 'data:image/png;base64,'+b64;
   document.getElementById('loading').classList.add('hide');
-}
-
-
-// ── Add uploaded app to sidebar
-function addUploadedApp(filename, appId) {
-  var name = filename.replace('.apk','').substring(0,18);
-  var list = document.querySelector('.sidebar .sec:nth-child(2) > div');
-  if (!list) return;
-  var btn = document.createElement('button');
-  btn.className = 'app-btn';
-  btn.onclick = function(){ launchStream(appId); };
-  btn.innerHTML = '<div class="app-icon" style="background:#1a2a3a">📱</div>' +
-    '<div><div class="app-name">'+name+'</div><div class="app-sub">Uploaded APK</div></div>' +
-    '<span class="badge" style="background:rgba(79,255,176,0.1);color:#4fffb0">ready</span>';
-  list.insertBefore(btn, list.firstChild);
 }
 
 // ── Upload
 function setupUpload() {
   var box = document.getElementById('upload-box');
   var inp = document.getElementById('apk-file');
-  box.addEventListener('dragover',function(e){e.preventDefault();box.style.borderColor='#4fffb0';});
+  box.addEventListener('dragover',function(e){e.preventDefault();box.style.borderColor='var(--accent)';});
   box.addEventListener('dragleave',function(){box.style.borderColor='';});
   box.addEventListener('drop',function(e){
     e.preventDefault(); box.style.borderColor='';
@@ -563,21 +701,28 @@ function setupUpload() {
 }
 
 function uploadApk(file) {
-  if(!backendUrl){toast('Connect backend first');return;}
-  var pw=document.getElementById('prog-wrap'), pf=document.getElementById('prog-fill'), pl=document.getElementById('prog-label');
+  if (!backendUrl) { toast('Connect backend first'); return; }
+  var pw=document.getElementById('prog-wrap'),pf=document.getElementById('prog-fill'),pl=document.getElementById('prog-lbl');
   pw.style.display='block';
   log('Uploading '+file.name,'i');
   var fd=new FormData(); fd.append('apk',file);
   var xhr=new XMLHttpRequest();
   xhr.open('POST',backendUrl+'/api/upload');
+  xhr.setRequestHeader('ngrok-skip-browser-warning','true');
   xhr.upload.onprogress=function(e){var p=Math.round(e.loaded/e.total*100);pf.style.width=p+'%';pl.textContent='Uploading... '+p+'%';};
   xhr.onload=function(){
     if(xhr.status===200){
       var res=JSON.parse(xhr.responseText);
-      pl.textContent='Done!'; log('APK uploaded — launching...','i');
-      addUploadedApp(res.filename||'app.apk', res.app_id);
-      launchStream(res.app_id);
-    } else { pl.textContent='Failed'; log('Upload error','e'); }
+      pl.textContent='Done!';
+      log('APK uploaded!','i');
+      // Save to installed apps list
+      var appName = file.name.replace('.apk','');
+      var appEntry = { id: res.app_id, name: appName, pkg: '' };
+      installedApps.unshift(appEntry);
+      localStorage.setItem('dw_apps', JSON.stringify(installedApps));
+      renderInstalledApps();
+      launchStream(res.app_id, appName);
+    } else { pl.textContent='Failed'; log('Upload error '+xhr.status,'e'); }
     setTimeout(function(){pw.style.display='none';},3000);
   };
   xhr.onerror=function(){pl.textContent='Failed';log('Upload failed','e');setTimeout(function(){pw.style.display='none';},3000);};
@@ -591,20 +736,43 @@ function runAdb() {
   document.getElementById('adb-cmd').value='';
   log('$ '+cmd,'i');
   if(!backendUrl){log('No backend','e');return;}
-  fetch(backendUrl+'/api/adb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})})
-    .then(function(r){return r.json();})
-    .then(function(d){if(d.output)d.output.split('\n').forEach(function(l){log(l,'l');});if(d.error)log(d.error,'e');})
-    .catch(function(){log('ADB failed','e');});
+  fetch(backendUrl+'/api/adb',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+    body:JSON.stringify({command:cmd})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.output)d.output.split('\n').forEach(function(l){if(l.trim())log(l,'l');});
+    if(d.error)log(d.error,'e');
+  })
+  .catch(function(){log('ADB failed','e');});
 }
 
-// ── Controls
+// ── Key events
 function sendKey(k) {
-  if(ws) ws.send(JSON.stringify({type:'key',key:k}));
-  log('Key: '+k,'s');
-  toast(k);
+  if (ws) {
+    ws.send(JSON.stringify({ type: 'key', key: k }));
+    log('Key: '+k,'s');
+  } else {
+    toast(k);
+  }
 }
-function restartEmu() { if(ws)ws.send(JSON.stringify({type:'restart'})); goHome(); toast('Restarting...'); }
-function killSession() { if(ws){ws.close();ws=null;} goHome(); setStatus('disconnected'); toast('Session ended'); }
+
+// ── Session
+function restartEmu() {
+  if(ws) ws.send(JSON.stringify({type:'restart'}));
+  goHome();
+  toast('Restart signal sent');
+}
+
+function killSession() {
+  if(ws){ws.close();ws=null;}
+  goHome();
+  setStatus('disconnected');
+  log('Session ended','w');
+  toast('Session ended');
+}
 
 // ── Helpers
 function setStatus(s) {
