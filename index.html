@@ -492,6 +492,7 @@ function connectBackend() {
       setStatus('error');
       log('Cannot reach backend','e');
       toast('Cannot connect — check URL');
+        log('Try opening: '+url+'/api/status in browser','w');
     });
 }
 
