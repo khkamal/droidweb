@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DroidWeb — Android Emulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a3a;
+    --accent: #4fffb0;
+    --accent2: #7b6fff;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --danger: #ff4f6b;
+    --phone-w: 320px;
+    --phone-h: 640px;
+    --screen-w: 284px;
+    --screen-h: 504px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 56px 1fr;
+    grid-template-columns: 280px 1fr 300px;
+    grid-template-areas: "nav nav nav" "sidebar phone panel";
+    overflow: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    grid-area: nav;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    background: var(--surface);
+  }
+  .logo { font-family: 'Space Mono', monospace; font-size: 16px; color: var(--accent); letter-spacing: -0.5px; }
+  .logo span { color: var(--muted); }
+  .nav-chip {
+    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    background: rgba(79,255,176,0.08); color: var(--accent); border: 1px solid rgba(79,255,176,0.2);
+  }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--muted);
+    transition: background 0.3s;
+  }
+  .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .status-text { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* ── SIDEBAR ── */
+  aside {
+    grid-area: sidebar;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(79,255,176,0.04); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .upload-zone strong { color: var(--text); font-weight: 500; }
+
+  /* Progress bar */
+  .progress-wrap { margin-top: 10px; display: none; }
+  .progress-wrap.visible { display: block; }
+  .progress-bar-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.3s; }
+  .progress-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'Space Mono', monospace; }
+
+  /* Demo apps */
+  .app-list { display: flex; flex-direction: column; gap: 6px; }
+  .app-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.15s;
+  }
+  .app-item:hover { background: var(--surface2); border-color: var(--border); }
+  .app-item.active { background: rgba(79,255,176,0.06); border-color: rgba(79,255,176,0.3); }
+  .app-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .app-info .app-name { font-size: 13px; font-weight: 500; }
+  .app-info .app-size { font-size: 11px; color: var(--muted); }
+  .app-status { margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .app-status.ready { background: rgba(79,255,176,0.1); color: var(--accent); }
+  .app-status.demo { background: rgba(123,111,255,0.1); color: var(--accent2); }
+
+  /* Backend config */
+  .config-form { display: flex; flex-direction: column; gap: 8px; }
+  .config-form label { font-size: 11px; color: var(--muted); margin-bottom: 2px; display: block; }
+  .config-form input {
+    width: 100%; padding: 8px 10px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 12px; font-family: 'Space Mono', monospace;
+    outline: none; transition: border-color 0.2s;
+  }
+  .config-form input:focus { border-color: var(--accent2); }
+  .btn {
+    padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #6fffbf; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent2); }
+  .btn-danger { background: rgba(255,79,107,0.1); color: var(--danger); border: 1px solid rgba(255,79,107,0.2); }
+  .btn-danger:hover { background: rgba(255,79,107,0.2); }
+  .btn-full { width: 100%; text-align: center; }
+
+  /* ── PHONE ── */
+  .phone-area {
+    grid-area: phone;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+    position: relative;
+  }
+  .phone-glow {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,255,176,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Phone shell */
+  .phone {
+    width: var(--phone-w);
+    height: var(--phone-h);
+    background: linear-gradient(160deg, #1e1e2a 0%, #141420 100%);
+    border-radius: 44px;
+    border: 2px solid #2e2e40;
+    box-shadow: 0 0 0 1px #1a1a28, 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  /* Side buttons */
+  .phone::before {
+    content: '';
+    position: absolute;
+    right: -4px; top: 130px;
+    width: 4px; height: 60px;
+    background: #2a2a38; border-radius: 0 3px 3px 0;
+    box-shadow: 0 80px 0 #2a2a38;
+  }
+  .phone::after {
+    content: '';
+    position: absolute;
+    left: -4px; top: 160px;
+    width: 4px; height: 40px;
+    background: #2a2a38; border-radius: 3px 0 0 3px;
+    box-shadow: 0 54px 0 #2a2a38, 0 106px 0 #2a2a38;
+  }
+
+  /* Notch/camera bar */
+  .phone-top {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+  .notch {
+    width: 110px; height: 26px;
+    background: #0a0a10;
+    border-radius: 0 0 16px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .notch-cam { width: 10px; height: 10px; border-radius: 50%; background: #1a1a24; border: 1px solid #2a2a36; }
+  .notch-speaker { width: 40px; height: 4px; background: #1a1a24; border-radius: 2px; }
+
+  /* Screen */
+  .phone-screen {
+    width: var(--screen-w);
+    height: var(--screen-h);
+    background: #000;
+    margin: 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    cursor: crosshair;
+  }
+
+  /* Status bar inside screen */
+  .android-status-bar {
+    height: 24px;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center;
+    padding: 0 12px;
+    position: absolute; top: 0; left: 0; right: 0;
+    z-index: 10;
+    font-size: 11px; font-family: 'Space Mono', monospace;
+    color: #fff;
+  }
+  .status-time { font-weight: 700; font-size: 10px; }
+  .status-icons { margin-left: auto; display: flex; gap: 4px; align-items: center; font-size: 9px; }
+
+  /* Home screen */
+  #home-screen {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #1a1030 0%, #0d1a2e 50%, #0a100a 100%);
+    display: flex; flex-direction: column;
+  }
+  .wallpaper-overlay {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 60% 30%, rgba(79,255,176,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 70%, rgba(123,111,255,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .home-date {
+    padding: 48px 0 8px; text-align: center; position: relative; z-index: 1;
+  }
+  .home-time { font-family: 'DM Sans', sans-serif; font-size: 52px; font-weight: 300; color: #fff; letter-spacing: -2px; line-height: 1; }
+  .home-datestr { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  .app-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; padding: 16px 14px; margin-top: auto;
+    position: relative; z-index: 1;
+  }
+  .home-app {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer;
+  }
+  .home-app-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: transform 0.15s;
+  }
+  .home-app:active .home-app-icon { transform: scale(0.92); }
+  .home-app-label { font-size: 10px; color: rgba(255,255,255,0.75); text-align: center; }
+
+  .home-dock {
+    margin: 8px 14px 12px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 10px;
+    display: flex; justify-content: space-around;
+    position: relative; z-index: 1;
+  }
+  .dock-app { cursor: pointer; }
+  .dock-app .home-app-icon { width: 44px; height: 44px; }
+
+  /* Nav bar at bottom of screen */
+  .android-nav {
+    height: 36px;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 0 30px;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    z-index: 10;
+  }
+  .nav-btn { cursor: pointer; opacity: 0.7; font-size: 14px; padding: 4px 8px; transition: opacity 0.15s; }
+  .nav-btn:hover { opacity: 1; }
+
+  /* Stream view */
+  #stream-view {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column;
+  }
+  #stream-view.active { display: flex; }
+  #android-stream {
+    flex: 1;
+    width: 100%;
+    object-fit: contain;
+    background: #000;
+    cursor: crosshair;
+  }
+  .stream-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85);
+    z-index: 20;
+  }
+  .stream-overlay.hidden { display: none; }
+  .loader {
+    width: 40px; height: 40px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay-text { font-size: 13px; color: var(--muted); margin-top: 12px; font-family: 'Space Mono', monospace; }
+  .overlay-subtext { font-size: 11px; color: var(--muted); margin-top: 6px; opacity: 0.6; }
+
+  /* Phone bottom bar */
+  .phone-bottom {
+    height: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .home-indicator {
+    width: 100px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    grid-area: panel;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+
+  /* Controls grid */
+  .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ctrl-btn {
+    padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text);
+    text-align: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .ctrl-btn:hover { border-color: var(--accent2); background: rgba(123,111,255,0.06); }
+  .ctrl-btn:active { transform: scale(0.96); }
+
+  /* Log console */
+  .log-console {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px;
+    height: 180px;
+    overflow-y: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  .log-line { color: var(--muted); }
+  .log-line.info { color: var(--accent); }
+  .log-line.warn { color: #ffd166; }
+  .log-line.error { color: var(--danger); }
+  .log-line.system { color: var(--accent2); }
+
+  /* Device info */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-card {
+    background: var(--surface2);
+    border-radius: 8px; padding: 10px;
+    border: 1px solid var(--border);
+  }
+  .info-card-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .info-card-value { font-size: 13px; font-weight: 500; font-family: 'Space Mono', monospace; }
+
+  /* Touch ripple */
+  .ripple {
+    position: absolute; border-radius: 50%;
+    background: rgba(79,255,176,0.4);
+    transform: scale(0); pointer-events: none;
+    animation: ripple-anim 0.4s ease-out forwards;
+  }
+  @keyframes ripple-anim {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 10px 20px; border-radius: 10px; font-size: 13px;
+    opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Droid<span>Web</span></div>
+  <div class="nav-chip">Android Emulator</div>
+  <div class="nav-right">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-text" id="status-text">disconnected</span>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Upload APK</div>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="apk-input" accept=".apk"/>
+      <div class="upload-icon">📦</div>
+      <p><strong>Drop APK here</strong><br/>or click to browse</p>
+    </div>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">Uploading...</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Demo Apps</div>
+    <div class="app-list" id="app-list">
+      <div class="app-item active" data-app="calculator" onclick="launchDemo(this)">
+        <div class="app-icon" style="background:#1a3a2a">🧮</div>
+        <div class="app-info">
+          <div class="app-name">Calculator</div>
+          <div class="app-size">Built-in demo</div>
+        </div>
+        <span class="app-status demo">demo</span>
+      </div>
+      <div class="app-item" data-app="browser" onclick="launchDemo(this)">
+        <div class="app-icon" style="background:#1a1a3a">🌐</div>
+        <div class="app-info">
+          <div class="app-name">Browser</div>
+          <div class="app-size">Built-in demo</div>
+        </div>
+        <span class="app-status demo">demo</span>
+      </div>
+      <div class="app-item" data-app="settings" onclick="launchDemo(this)">
+        <div class="app-icon" style="background:#2a2a1a">⚙️</div>
+        <div class="app-info">
+          <div class="app-name">Settings</div>
+          <div class="app-size">Built-in demo</div>
+        </div>
+        <span class="app-status demo">demo</span>
+      </div>
+      <div class="app-item" data-app="terminal" onclick="launchDemo(this)">
+        <div class="app-icon" style="background:#0a1a0a">💻</div>
+        <div class="app-info">
+          <div class="app-name">Terminal</div>
+          <div class="app-size">Built-in demo</div>
+        </div>
+        <span class="app-status demo">demo</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Backend URL</div>
+    <div class="config-form">
+      <div>
+        <label>Railway / Render URL</label>
+        <input type="text" id="backend-url" placeholder="https://your-app.railway.app" value=""/>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="connectBackend()">Connect</button>
+      <button class="btn btn-secondary btn-full" onclick="showSetupGuide()">Setup Guide</button>
+    </div>
+  </div>
+</aside>
+
+<!-- PHONE -->
+<main class="phone-area">
+  <div class="phone-glow"></div>
+  <div class="phone">
+    <div class="phone-top">
+      <div class="notch">
+        <div class="notch-cam"></div>
+        <div class="notch-speaker"></div>
+        <div class="notch-cam"></div>
+      </div>
+    </div>
+
+    <div class="phone-screen" id="phone-screen">
+      <!-- Status bar -->
+      <div class="android-status-bar">
+        <span class="status-time" id="android-time">12:00</span>
+        <span class="status-icons">
+          <span>📶</span><span>🔋</span>
+        </span>
+      </div>
+
+      <!-- Home screen -->
+      <div id="home-screen">
+        <div class="wallpaper-overlay"></div>
+        <div class="home-date">
+          <div class="home-time" id="home-time">12:00</div>
+          <div class="home-datestr" id="home-date">Monday, March 22</div>
+        </div>
+        <div class="app-grid" id="home-app-grid">
+          <!-- populated by JS -->
+        </div>
+        <div class="home-dock">
+          <div class="home-app dock-app" onclick="openApp('phone')">
+            <div class="home-app-icon" style="background:linear-gradient(135deg,#1a8a1a,#0a5a0a)">📞</div>
+          </div>
+          <div class="home-app dock-app" onclick="openApp('messages')">
+            <div class="home-app-icon" style="background:linear-gradient(135deg,#1a4a8a,#0a2a6a)">💬</div>
+          </div>
+          <div class="home-app dock-app" onclick="openApp('camera')">
+            <div class="home-app-icon" style="background:linear-gradient(135deg,#4a1a1a,#2a0a0a)">📷</div>
+          </div>
+          <div class="home-app dock-app" onclick="openApp('appDrawer')">
+            <div class="home-app-icon" style="background:linear-gradient(135deg,#2a2a2a,#1a1a1a)">⋮⋮</div>
+          </div>
+        </div>
+        <div class="android-nav">
+          <span class="nav-btn" onclick="goBack()">◁</span>
+          <span class="nav-btn" onclick="goHome()">○</span>
+          <span class="nav-btn" onclick="showRecents()">□</span>
+        </div>
+      </div>
+
+      <!-- Stream view (real APK from backend) -->
+      <div id="stream-view">
+        <div class="android-status-bar" style="position:relative;flex-shrink:0">
+          <span class="status-time" id="stream-time">12:00</span>
+          <span style="font-size:10px;color:rgba(79,255,176,0.8);margin-left:8px" id="running-app-name">App</span>
+          <span class="status-icons"><span>📶</span><span>🔋</span></span>
+        </div>
+        <img id="android-stream" src="" alt="Android screen stream"/>
+        <div class="stream-overlay" id="stream-overlay">
+          <div class="loader"></div>
+          <div class="overlay-text" id="overlay-text">Starting Android...</div>
+          <div class="overlay-subtext" id="overlay-subtext">This may take 30–60 seconds</div>
+        </div>
+        <div class="android-nav">
+          <span class="nav-btn" onclick="sendKey('back')">◁</span>
+          <span class="nav-btn" onclick="goHome()">○</span>
+          <span class="nav-btn" onclick="sendKey('recent')">□</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-bottom">
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="right-panel">
+  <div class="panel-section">
+    <div class="panel-title">Device Controls</div>
+    <div class="controls-grid">
+      <button class="ctrl-btn" onclick="sendKey('volumeup')">🔊 Vol +</button>
+      <button class="ctrl-btn" onclick="sendKey('volumedown')">🔉 Vol −</button>
+      <button class="ctrl-btn" onclick="sendKey('back')">◁ Back</button>
+      <button class="ctrl-btn" onclick="goHome()">○ Home</button>
+      <button class="ctrl-btn" onclick="sendKey('recent')">□ Recent</button>
+      <button class="ctrl-btn" onclick="sendKey('screenshot')">📸 Shot</button>
+      <button class="ctrl-btn" onclick="rotateScreen()">↻ Rotate</button>
+      <button class="ctrl-btn" onclick="sendKey('menu')">≡ Menu</button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">Device Info</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-label">Android</div>
+        <div class="info-card-value" id="info-android">13.0</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">RAM</div>
+        <div class="info-card-value" id="info-ram">2 GB</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Storage</div>
+        <div class="info-card-value" id="info-storage">8 GB</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Arch</div>
+        <div class="info-card-value">x86_64</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">ADB Console</div>
+    <div class="log-console" id="log-console">
+      <div class="log-line system">$ DroidWeb v1.0.0</div>
+      <div class="log-line">Connect a backend to run real APKs.</div>
+      <div class="log-line">Demo apps run locally in the browser.</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <input type="text" id="adb-input" placeholder="adb shell ..."
+        style="flex:1;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace;outline:none;"
+        onkeydown="if(event.key==='Enter')runAdb()"/>
+      <button class="btn btn-secondary" onclick="runAdb()" style="padding:7px 12px;font-size:12px">Run</button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-title">Session</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn btn-secondary btn-full" onclick="restartEmulator()">↺ Restart Emulator</button>
+      <button class="btn btn-danger btn-full" onclick="killSession()">✕ End Session</button>
+    </div>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let backendUrl = localStorage.getItem('droidweb_backend') || '';
+let wsConn = null;
+let currentApp = 'home';
+let isStreaming = false;
+let sessionId = null;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  buildHomeApps();
+  if (backendUrl) {
+    document.getElementById('backend-url').value = backendUrl;
+    connectBackend();
+  }
+  setupUploadZone();
+  setupTouchInput();
+});
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const d = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('android-time').textContent = t;
+  document.getElementById('home-time').textContent = t;
+  document.getElementById('stream-time').textContent = t;
+  document.getElementById('home-date').textContent = d;
+}
+
+// ── Home screen apps ──
+const HOME_APPS = [
+  { icon: '🎮', label: 'Games', bg: '#1a1a3a', app: 'games' },
+  { icon: '🗺️', label: 'Maps', bg: '#0a2a1a', app: 'maps' },
+  { icon: '📷', label: 'Camera', bg: '#2a0a0a', app: 'camera' },
+  { icon: '🧮', label: 'Calc', bg: '#1a3a2a', app: 'calculator' },
+  { icon: '🌐', label: 'Browser', bg: '#1a1a3a', app: 'browser' },
+  { icon: '⚙️', label: 'Settings', bg: '#2a2a1a', app: 'settings' },
+  { icon: '💻', label: 'Terminal', bg: '#0a1a0a', app: 'terminal' },
+  { icon: '📁', label: 'Files', bg: '#2a1a0a', app: 'files' },
+];
+
+function buildHomeApps() {
+  const grid = document.getElementById('home-app-grid');
+  grid.innerHTML = HOME_APPS.map(a => `
+    <div class="home-app" onclick="openApp('${a.app}')">
+      <div class="home-app-icon" style="background:${a.bg}">${a.icon}</div>
+      <div class="home-app-label">${a.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── Touch input on screen ──
+function setupTouchInput() {
+  const screen = document.getElementById('phone-screen');
+  screen.addEventListener('click', (e) => {
+    // Ripple effect
+    const rect = screen.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    r.style.cssText = `left:${x}px;top:${y}px;width:20px;height:20px;margin:-10px 0 0 -10px`;
+    screen.appendChild(r);
+    setTimeout(() => r.remove(), 500);
+    // Forward to backend if streaming
+    if (isStreaming) sendTouchEvent('tap', x, y);
+  });
+
+  let touchStart = null;
+  screen.addEventListener('touchstart', (e) => {
+    const rect = screen.getBoundingClientRect();
+    touchStart = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+    e.preventDefault();
+  }, { passive: false });
+  screen.addEventListener('touchend', (e) => {
+    if (!touchStart) return;
+    const rect = screen.getBoundingClientRect();
+    const ex = e.changedTouches[0].clientX - rect.left;
+    const ey = e.changedTouches[0].clientY - rect.top;
+    const dx = ex - touchStart.x, dy = ey - touchStart.y;
+    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+      sendTouchEvent('swipe', touchStart.x, touchStart.y, ex, ey);
+    } else {
+      sendTouchEvent('tap', ex, ey);
+    }
+    touchStart = null;
+    e.preventDefault();
+  }, { passive: false });
+}
+
+// ── Backend connection ──
+async function connectBackend() {
+  const url = document.getElementById('backend-url').value.trim().replace(/\/$/, '');
+  if (!url) { toast('Enter your backend URL first'); return; }
+  backendUrl = url;
+  localStorage.setItem('droidweb_backend', url);
+  setStatus('connecting...');
+  log('Connecting to ' + url, 'info');
+  try {
+    const res = await fetch(url + '/api/status', { signal: AbortSignal.timeout(8000) });
+    const data = await res.json();
+    setStatus('connected');
+    log('Backend OK — Android ' + (data.android_version || '13'), 'info');
+    document.getElementById('info-android').textContent = data.android_version || '13.0';
+    document.getElementById('info-ram').textContent = data.ram || '2 GB';
+    document.getElementById('info-storage').textContent = data.storage || '8 GB';
+    toast('Backend connected!');
+    connectWebSocket(url);
+  } catch {
+    setStatus('disconnected');
+    log('Cannot reach backend — using demo mode', 'warn');
+    toast('Backend offline — demo mode active');
+  }
+}
+
+function connectWebSocket(url) {
+  const wsUrl = url.replace(/^http/, 'ws') + '/ws';
+  try {
+    wsConn = new WebSocket(wsUrl);
+    wsConn.onopen = () => { log('WebSocket open', 'system'); };
+    wsConn.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'frame') updateStream(msg.data);
+      if (msg.type === 'log') log(msg.text, msg.level || 'info');
+      if (msg.type === 'ready') { hideStreamOverlay(); log('Emulator ready', 'info'); }
+      if (msg.type === 'session') { sessionId = msg.id; }
+    };
+    wsConn.onerror = () => log('WebSocket error', 'error');
+    wsConn.onclose = () => { wsConn = null; log('WebSocket closed', 'warn'); };
+  } catch {}
+}
+
+// ── APK Upload ──
+function setupUploadZone() {
+  const zone = document.getElementById('upload-zone');
+  const input = document.getElementById('apk-input');
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.endsWith('.apk')) uploadApk(f);
+    else toast('Please drop an .apk file');
+  });
+  input.addEventListener('change', () => {
+    if (input.files[0]) uploadApk(input.files[0]);
+  });
+}
+
+async function uploadApk(file) {
+  if (!backendUrl) { toast('Connect a backend first'); return; }
+  const pw = document.getElementById('progress-wrap');
+  const pf = document.getElementById('progress-fill');
+  const pl = document.getElementById('progress-label');
+  pw.classList.add('visible');
+  log('Uploading ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' MB)', 'info');
+
+  const formData = new FormData();
+  formData.append('apk', file);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', backendUrl + '/api/upload');
+  xhr.upload.onprogress = (e) => {
+    const pct = Math.round(e.loaded / e.total * 100);
+    pf.style.width = pct + '%';
+    pl.textContent = 'Uploading... ' + pct + '%';
+  };
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const res = JSON.parse(xhr.responseText);
+      pl.textContent = 'Uploaded!';
+      log('APK uploaded — installing...', 'info');
+      addUploadedApp(file.name, res.app_id);
+      startStream(res.app_id, file.name);
+    } else {
+      pl.textContent = 'Upload failed';
+      log('Upload error: ' + xhr.status, 'error');
+    }
+    setTimeout(() => pw.classList.remove('visible'), 3000);
+  };
+  xhr.onerror = () => {
+    pl.textContent = 'Upload failed'; log('Upload network error', 'error');
+    setTimeout(() => pw.classList.remove('visible'), 3000);
+  };
+  xhr.send(formData);
+}
+
+function addUploadedApp(filename, appId) {
+  const list = document.getElementById('app-list');
+  const name = filename.replace('.apk','').substring(0, 16);
+  const el = document.createElement('div');
+  el.className = 'app-item';
+  el.dataset.appId = appId;
+  el.innerHTML = `
+    <div class="app-icon" style="background:#1a2a3a">📱</div>
+    <div class="app-info"><div class="app-name">${name}</div><div class="app-size">Uploaded APK</div></div>
+    <span class="app-status ready">ready</span>`;
+  el.onclick = () => startStream(appId, name);
+  list.prepend(el);
+}
+
+// ── Streaming ──
+function startStream(appId, appName) {
+  if (!wsConn) { toast('Not connected to backend'); return; }
+  const sv = document.getElementById('stream-view');
+  const hs = document.getElementById('home-screen');
+  hs.style.display = 'none';
+  sv.classList.add('active');
+  isStreaming = true;
+  document.getElementById('running-app-name').textContent = appName || 'App';
+  showStreamOverlay('Starting ' + (appName || 'app') + '...');
+  log('Launching ' + (appName || appId), 'info');
+  wsConn.send(JSON.stringify({ type: 'launch', app_id: appId }));
+  setTimeout(() => hideStreamOverlay(), 12000);
+}
+
+function updateStream(frameData) {
+  const img = document.getElementById('android-stream');
+  img.src = 'data:image/jpeg;base64,' + frameData;
+  hideStreamOverlay();
+}
+
+function showStreamOverlay(text) {
+  const o = document.getElementById('stream-overlay');
+  o.classList.remove('hidden');
+  if (text) document.getElementById('overlay-text').textContent = text;
+}
+
+function hideStreamOverlay() {
+  document.getElementById('stream-overlay').classList.add('hidden');
+}
+
+// ── Demo apps (in-browser) ──
+function launchDemo(el) {
+  document.querySelectorAll('.app-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const app = el.dataset.app;
+  openApp(app);
+}
+
+function openApp(app) {
+  // If backend connected, hand off to real stream
+  if (backendUrl && wsConn && app !== 'home') {
+    startStream(app, app);
+    return;
+  }
+  // Otherwise show demo
+  log('Opening ' + app + ' (demo mode)', 'system');
+  currentApp = app;
+  toast(app + ' — demo mode');
+}
+
+// ── Navigation ──
+function goHome() {
+  const sv = document.getElementById('stream-view');
+  const hs = document.getElementById('home-screen');
+  sv.classList.remove('active');
+  hs.style.display = '';
+  isStreaming = false;
+  currentApp = 'home';
+  if (wsConn) wsConn.send(JSON.stringify({ type: 'key', key: 'home' }));
+}
+
+function goBack() { sendKey('back'); }
+
+function showRecents() {
+  sendKey('recent');
+  toast('Recent apps');
+}
+
+// ── Key / touch events ──
+function sendKey(key) {
+  if (wsConn) {
+    wsConn.send(JSON.stringify({ type: 'key', key }));
+    log('Key: ' + key, 'system');
+  } else {
+    log('Key: ' + key + ' (no backend)', 'warn');
+    toast(key);
+  }
+}
+
+function sendTouchEvent(type, x1, y1, x2, y2) {
+  if (!wsConn) return;
+  const screen = document.getElementById('phone-screen');
+  const rect = screen.getBoundingClientRect();
+  const scaleX = 1080 / rect.width;
+  const scaleY = 1920 / rect.height;
+  wsConn.send(JSON.stringify({
+    type: 'touch', gesture: type,
+    x: Math.round(x1 * scaleX), y: Math.round(y1 * scaleY),
+    x2: x2 ? Math.round(x2 * scaleX) : undefined,
+    y2: y2 ? Math.round(y2 * scaleY) : undefined
+  }));
+}
+
+// ── ADB console ──
+async function runAdb() {
+  const input = document.getElementById('adb-input');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  input.value = '';
+  log('$ ' + cmd, 'info');
+  if (!backendUrl) { log('No backend connected', 'error'); return; }
+  try {
+    const res = await fetch(backendUrl + '/api/adb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: cmd, session_id: sessionId })
+    });
+    const data = await res.json();
+    if (data.output) data.output.split('\n').forEach(l => log(l));
+    if (data.error) log(data.error, 'error');
+  } catch { log('ADB command failed', 'error'); }
+}
+
+// ── Session control ──
+async function restartEmulator() {
+  log('Restarting emulator...', 'warn');
+  goHome();
+  if (backendUrl && wsConn) wsConn.send(JSON.stringify({ type: 'restart' }));
+  toast('Restarting...');
+}
+
+function killSession() {
+  if (wsConn) { wsConn.close(); wsConn = null; }
+  goHome();
+  setStatus('disconnected');
+  log('Session ended', 'warn');
+  toast('Session ended');
+}
+
+function rotateScreen() {
+  sendKey('rotate');
+  toast('Rotate screen');
+}
+
+// ── Setup Guide ──
+function showSetupGuide() {
+  const guide = `BACKEND SETUP GUIDE
+
+1. Clone the backend:
+   git clone [your repo]
+   cd backend
+
+2. Deploy to Railway (free):
+   railway login
+   railway init
+   railway up
+
+3. Or deploy to Render (free):
+   Connect GitHub repo at render.com
+   Set: Docker environment
+   Start command: node src/index.js
+
+4. Copy your deployment URL here
+   e.g. https://myapp.railway.app
+
+See README.md for full Docker setup.`;
+  alert(guide);
+}
+
+// ── Helpers ──
+function setStatus(s) {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  text.textContent = s;
+  dot.classList.toggle('connected', s === 'connected');
+}
+
+function log(msg, level = '') {
+  const c = document.getElementById('log-console');
+  const line = document.createElement('div');
+  line.className = 'log-line ' + level;
+  const t = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  line.textContent = '[' + t + '] ' + msg;
+  c.appendChild(line);
+  c.scrollTop = c.scrollHeight;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
