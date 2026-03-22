@@ -435,44 +435,52 @@ function buildHome(){
 
 function launchSystemApp(id, pkg, label){
   if (!ws) { toast('Connect backend to launch apps'); return; }
-  document.getElementById('home-screen').style.display='none';
-  var av=document.getElementById('app-view');
-  av.style.display='flex'; av.style.flexDirection='column';
-  document.getElementById('app-name-lbl').textContent=label;
-  document.getElementById('stream-img').style.display='block';
-  var ld=document.getElementById('loading');
-  ld.classList.remove('hide');
-  document.getElementById('ld-txt').textContent='Opening '+label+'...';
+  showAppView(label);
   streaming=true;
-  // Launch via ADB am start
-  if (ws) ws.send(JSON.stringify({type:'launch_intent', pkg: pkg, label: label}));
-  setTimeout(function(){ld.classList.add('hide');},10000);
+  ws.send(JSON.stringify({type:'launch_intent', pkg:pkg, label:label}));
+  setTimeout(function(){document.getElementById('loading').classList.add('hide');},10000);
 }
 
 function launchStream(appId, appName){
   if (!ws) { toast('Connect backend to launch apps'); return; }
+  showAppView(appName||appId);
+  streaming=true;
+  ws.send(JSON.stringify({type:'launch', app_id:appId}));
+  setTimeout(function(){document.getElementById('loading').classList.add('hide');},15000);
+}
+
+function showAppView(label){
+  locked=false;
+  document.getElementById('lock-screen').style.display='none';
   document.getElementById('home-screen').style.display='none';
   var av=document.getElementById('app-view');
-  av.style.display='flex'; av.style.flexDirection='column';
-  document.getElementById('app-name-lbl').textContent=appName||appId;
+  av.style.cssText='display:flex;flex-direction:column;position:absolute;inset:0;background:#000';
+  document.getElementById('app-name-lbl').textContent=label;
   document.getElementById('stream-img').style.display='block';
   var ld=document.getElementById('loading');
   ld.classList.remove('hide');
-  document.getElementById('ld-txt').textContent='Launching '+(appName||appId)+'...';
-  streaming=true;
-  if (ws) ws.send(JSON.stringify({type:'launch', app_id:appId}));
-  setTimeout(function(){ld.classList.add('hide');},15000);
+  document.getElementById('ld-txt').textContent='Loading '+label+'...';
 }
 
 function goHome(){
-  streaming=false;
-  document.getElementById('app-view').style.display='none';
-  if (!locked) {
+  if (ws) {
+    // Show real Android — keep streaming, just send home key
+    ws.send(JSON.stringify({type:'key',key:'home'}));
+    showAppView('Android');
+    streaming=true;
+    startHomeStream();
+  } else {
+    streaming=false;
+    document.getElementById('app-view').style.cssText='display:none';
     document.getElementById('home-screen').style.display='flex';
     document.getElementById('home-screen').style.flexDirection='column';
+    document.getElementById('stream-img').src='';
   }
-  document.getElementById('stream-img').src='';
-  if (ws) ws.send(JSON.stringify({type:'key',key:'home'}));
+}
+
+function startHomeStream(){
+  // Ask backend to just stream current screen (no app launch)
+  if(ws) ws.send(JSON.stringify({type:'stream_only'}));
 }
 
 // ── Installed apps sidebar
@@ -573,8 +581,6 @@ function connectBackend(){
     if(d.ram)document.getElementById('info-ram').textContent=d.ram;
     toast('✅ Backend connected!');
     openWS(url);
-    if(locked)unlock();
-    buildHome();
   })
   .catch(function(e){setStatus('error');log('Cannot connect: '+e.message,'e');toast('Cannot connect — check URL');});
 }
@@ -584,7 +590,15 @@ function openWS(url){
   function make(u){
     try{
       ws=new WebSocket(u);
-      ws.onopen=function(){log('WebSocket live','s');};
+      ws.onopen=function(){
+      log('WebSocket live','s');
+      // Stream Android home screen immediately
+      setTimeout(function(){
+        showAppView('Android Home');
+        streaming=true;
+        startHomeStream();
+      }, 1000);
+    };
       ws.onmessage=function(e){
         var m;try{m=JSON.parse(e.data);}catch{return;}
         if(m.type==='frame')updateFrame(m.data);
