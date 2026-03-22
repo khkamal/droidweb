@@ -480,7 +480,7 @@ function connectBackend() {
   localStorage.setItem('dw_backend', url);
   setStatus('connecting...');
   log('Connecting to '+url,'i');
-  fetch(url+'/api/status', {signal: AbortSignal.timeout(8000)})
+  fetch(url+'/api/status', {signal: AbortSignal.timeout(8000), headers: {'ngrok-skip-browser-warning': 'true'}})
     .then(function(r){return r.json();})
     .then(function(d){
       setStatus('connected');
