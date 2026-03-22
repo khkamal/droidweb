@@ -533,6 +533,21 @@ function updateFrame(b64) {
   document.getElementById('loading').classList.add('hide');
 }
 
+
+// ── Add uploaded app to sidebar
+function addUploadedApp(filename, appId) {
+  var name = filename.replace('.apk','').substring(0,18);
+  var list = document.querySelector('.sidebar .sec:nth-child(2) > div');
+  if (!list) return;
+  var btn = document.createElement('button');
+  btn.className = 'app-btn';
+  btn.onclick = function(){ launchStream(appId); };
+  btn.innerHTML = '<div class="app-icon" style="background:#1a2a3a">📱</div>' +
+    '<div><div class="app-name">'+name+'</div><div class="app-sub">Uploaded APK</div></div>' +
+    '<span class="badge" style="background:rgba(79,255,176,0.1);color:#4fffb0">ready</span>';
+  list.insertBefore(btn, list.firstChild);
+}
+
 // ── Upload
 function setupUpload() {
   var box = document.getElementById('upload-box');
@@ -560,6 +575,7 @@ function uploadApk(file) {
     if(xhr.status===200){
       var res=JSON.parse(xhr.responseText);
       pl.textContent='Done!'; log('APK uploaded — launching...','i');
+      addUploadedApp(res.filename||'app.apk', res.app_id);
       launchStream(res.app_id);
     } else { pl.textContent='Failed'; log('Upload error','e'); }
     setTimeout(function(){pw.style.display='none';},3000);
